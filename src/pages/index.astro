@@ -1,0 +1,229 @@
+---
+import Workspace from "../components/Workspace.astro";
+import "../style.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="/mark.svg" type="image/svg+xml" />
+    <title>peekzip · archive explorer</title>
+  </head>
+  <body>
+    <header class="top">
+      <div class="frame mast">
+        <a
+          class="wordmark"
+          href="/"
+          aria-label="peekzip home"
+          draggable="false"
+        >
+          <img
+            src="/mark.svg"
+            alt=""
+            draggable="false"
+            width="38"
+            height="38"
+          />
+          peekzip
+        </a>
+        <nav aria-label="Main navigation">
+          <button class="quiet" data-dialog="help">
+            How it works
+          </button>
+          <button class="privacy" data-dialog="privacy">
+            <svg aria-hidden="true">
+              <use href="/icons.svg#shield-check" />
+            </svg>
+            Privacy
+          </button>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div id="landing" class="frame">
+        <section class="hero" aria-labelledby="landing-title">
+          <picture class="hero-photo" aria-hidden="true">
+            <source media="(max-width: 700px)" srcset="/hero-small.webp" />
+            <img
+              src="/hero.webp"
+              alt=""
+              draggable="false"
+              fetchpriority="high"
+              width="1680"
+              height="560"
+            />
+          </picture>
+          <div class="intro">
+            <h1 id="landing-title">
+              A peek inside
+              <br />
+              <em>your ZIP.</em>
+            </h1>
+            <p>
+              Browse an archive, preview its files, and download just what you
+              need.
+            </p>
+          </div>
+        </section>
+        <section class="opener" aria-labelledby="open-title">
+          <div class="open-head">
+            <h2 id="open-title">Open an archive</h2>
+          </div>
+          <div class="sources">
+            <div class="local-source">
+              <span class="field-label">From your device</span>
+              <label class="dropzone" id="dropzone">
+                <input
+                  id="pick-file"
+                  type="file"
+                  aria-label="Choose a ZIP file from your device"
+                  accept=".zip,.jar,.epub,.docx,.xlsx,.pptx,.apk,.cbz,application/zip"
+                />
+                <svg aria-hidden="true">
+                  <use href="/icons.svg#folder-open" />
+                </svg>
+                <span>
+                  <strong>Choose a ZIP</strong>{" "}
+                  <span class="drop-hint">or drop it here</span>
+                </span>
+              </label>
+            </div>
+            <form id="open-form">
+              <label class="field-label" for="zip-url">
+                From a link
+              </label>
+              <div class="input-row">
+                <svg aria-hidden="true">
+                  <use href="/icons.svg#link" />
+                </svg>
+                <input
+                  id="zip-url"
+                  type="url"
+                  placeholder="Paste a direct ZIP URL"
+                  required
+                  autocomplete="off"
+                  spellcheck="false"
+                  aria-describedby="open-status"
+                />
+                <button class="open-btn" type="submit">
+                  Open ZIP{" "}
+                  <svg aria-hidden="true">
+                    <use href="/icons.svg#arrow-right" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="open-feedback">
+            <span class="cli-spinner" aria-hidden="true"></span>
+            <p id="open-status" role="status" aria-live="polite"></p>
+            <button
+              class="feedback-action"
+              id="open-cancel"
+              type="button"
+              hidden
+            >
+              Cancel
+            </button>
+          </div>
+          <button id="sample" type="button">
+            Try a sample{" "}
+            <svg aria-hidden="true">
+              <use href="/icons.svg#arrow-up-right" />
+            </svg>
+          </button>
+        </section>
+        <footer class="note">
+          <svg aria-hidden="true">
+            <use href="/icons.svg#lock" />
+          </svg>
+          <span>
+            Local files stay on your device. Remote ZIPs are read directly from
+            their source.
+          </span>
+        </footer>
+      </div>
+      <Workspace />
+    </main>
+    <dialog id="info-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-head">
+        <h2 id="dialog-title"></h2>
+        <button type="button" class="dismiss" aria-label="Close dialog">
+          <svg aria-hidden="true">
+            <use href="/icons.svg#x" />
+          </svg>
+        </button>
+      </div>
+      <div class="dialog-copy"></div>
+    </dialog>
+    <script>
+      const zone = document.querySelector<HTMLLabelElement>("#dropzone")!;
+      zone.addEventListener("dragover", (event) => {
+        if (event.dataTransfer?.types.includes("Files")) {
+          event.preventDefault();
+          zone.classList.add("dragging");
+        }
+      });
+      zone.addEventListener("dragleave", (event) => {
+        if (!(
+          event.relatedTarget instanceof Node &&
+          zone.contains(event.relatedTarget)
+        ))
+          zone.classList.remove("dragging");
+      });
+      document.addEventListener("drop", () =>
+        zone.classList.remove("dragging"),
+      );
+      window.addEventListener("blur", () => zone.classList.remove("dragging"));
+      const dialog = document.querySelector<HTMLDialogElement>("#info-dialog")!;
+      const content = {
+        help: [
+          "How it works",
+          "Paste a direct ZIP link or choose a file from your device. Search the archive, then select an entry to preview or save it.",
+          "For remote archives, the host must allow byte-range requests and cross-origin browser access. You can share a preview link when the recipient can access the same archive.",
+        ],
+        privacy: [
+          "Your files stay yours",
+          "Local archives are read in your browser. Opening a remote archive connects your browser directly to its host, which can see those requests.",
+          "A preview link includes the source address and filename. Anyone with the link can see both and may be able to open the whole source archive.",
+        ],
+      };
+      document
+        .querySelectorAll<HTMLButtonElement>("[data-dialog]")
+        .forEach((button) =>
+          button.addEventListener("click", () => {
+            const [title, ...paragraphs] =
+              content[button.dataset.dialog as keyof typeof content];
+            dialog.querySelector("h2")!.textContent = title;
+            dialog.querySelector(".dialog-copy")!.replaceChildren(
+              ...paragraphs.map((text) =>
+                Object.assign(document.createElement("p"), {
+                  textContent: text,
+                }),
+              ),
+            );
+            dialog.showModal();
+          }),
+        );
+      dialog
+        .querySelector("button")!
+        .addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (
+          event.target === dialog &&
+          !(
+            event.clientX >= dialog.getBoundingClientRect().left &&
+            event.clientX <= dialog.getBoundingClientRect().right &&
+            event.clientY >= dialog.getBoundingClientRect().top &&
+            event.clientY <= dialog.getBoundingClientRect().bottom
+          )
+        )
+          dialog.close();
+      });
+    </script>
+  </body>
+</html>

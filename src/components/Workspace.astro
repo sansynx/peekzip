@@ -1,0 +1,154 @@
+---
+import "../workspace.css";
+---
+
+<section id="workspace" aria-label="Archive explorer" hidden>
+  <div class="pz-workhead">
+    <div class="pz-titleblock">
+      <nav class="pz-archive-nav" aria-label="Archive navigation">
+        <button class="pz-return" id="ws-parent" type="button" hidden>
+          <svg aria-hidden="true">
+            <use href="/icons.svg#arrow-left" />
+          </svg>{" "}
+          Up one level
+        </button>
+        <button class="pz-return" id="ws-close" type="button">
+          <svg aria-hidden="true">
+            <use href="/icons.svg#folder-open" />
+          </svg>{" "}
+          Open another archive
+        </button>
+      </nav>
+      <div
+        id="ws-breadcrumb"
+        class="pz-crumb"
+        aria-label="Archive path"
+        hidden
+      ></div>
+      <h1 id="ws-title" tabindex="-1">
+        Archive
+      </h1>
+      <p class="pz-info" id="ws-meta"></p>
+    </div>
+  </div>
+  <nav class="pz-switch" aria-label="Archive views">
+    <button
+      id="ws-files-view"
+      aria-controls="ws-index-panel"
+      aria-pressed="true"
+      type="button"
+    >
+      <svg aria-hidden="true">
+        <use href="/icons.svg#folder-open" />
+      </svg>{" "}
+      Files
+    </button>
+    <button
+      id="ws-preview-view"
+      aria-controls="ws-preview-panel"
+      aria-pressed="false"
+      type="button"
+      disabled
+    >
+      <svg aria-hidden="true">
+        <use href="/icons.svg#archive" />
+      </svg>{" "}
+      Preview
+    </button>
+  </nav>
+  <div class="pz-workgrid">
+    <aside id="ws-index-panel" class="pz-index" aria-label="File index">
+      <div class="pz-section-title">
+        <h2>File index</h2>
+        <span id="ws-count" class="pz-count" role="status"></span>
+      </div>
+      <label class="pz-search">
+        <svg width="16" height="16" aria-hidden="true">
+          <use href="/icons.svg#search" />
+        </svg>
+        <input
+          id="ws-search"
+          type="search"
+          placeholder="Find a file…"
+          aria-label="Find a file"
+        />
+      </label>
+      <p id="ws-keys" class="pz-sr">
+        Use the up and down arrows to move through files, then Enter to open a
+        preview.
+      </p>
+      <div
+        id="ws-list"
+        class="pz-file-list"
+        role="group"
+        aria-label="Archive files"
+        aria-describedby="ws-keys"
+      ></div>
+      <div class="pz-pager" id="ws-pager" hidden>
+        <button id="ws-prev" type="button" aria-label="Previous page">
+          ← Previous
+        </button>
+        <span id="ws-page"></span>
+        <button id="ws-more" type="button" aria-label="Next page">
+          Next →
+        </button>
+      </div>
+    </aside>
+    <section id="ws-preview-panel" class="pz-preview" aria-label="File preview">
+      <div class="pz-preview-head">
+        <div>
+          <div class="pz-panel-label">
+            <span class="pz-label">File preview</span>
+            <button
+              type="button"
+              id="ws-back-list"
+              class="pz-return-list"
+              hidden
+            >
+              Back to files
+            </button>
+          </div>
+          <h2 id="ws-filename" tabindex="-1">
+            Choose a file
+          </h2>
+          <p id="ws-filemeta" class="pz-info"></p>
+        </div>
+      </div>
+      <div
+        id="ws-body"
+        class="pz-stage"
+        role="region"
+        aria-label="Preview contents"
+        tabindex="0"
+      ></div>
+      <div class="pz-actions" role="group" aria-label="File actions">
+        <button type="button" id="ws-enter" hidden>
+          <svg aria-hidden="true">
+            <use href="/icons.svg#archive" />
+          </svg>{" "}
+          Open nested ZIP
+        </button>
+        <button type="button" id="ws-share" hidden>
+          <svg aria-hidden="true">
+            <use href="/icons.svg#link" />
+          </svg>
+          Copy link
+        </button>
+        <button type="button" class="pz-primary" id="ws-save" hidden>
+          <svg aria-hidden="true">
+            <use href="/icons.svg#download" />
+          </svg>
+          <span class="cli-spinner" aria-hidden="true"></span>
+          <span id="ws-save-label">Save file</span>
+        </button>
+        <button type="button" id="ws-cancel" class="pz-cancel" hidden>
+          Cancel
+        </button>
+      </div>
+      <p id="ws-notice" class="pz-notice" role="status"></p>
+    </section>
+  </div>
+</section>
+<script>
+  import "../lib/app";
+</script>
