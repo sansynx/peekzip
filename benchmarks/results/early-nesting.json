@@ -1,0 +1,1624 @@
+{
+  "url": "http://127.0.0.1:4413",
+  "archive": {
+    "archiveBytes": 5511338131,
+    "receipt": "peekzip benchmark: verified nested selection\n",
+    "receiptSha256": "8aa7620818b71ed855043230de40fa8d4292d10986945e8f9798bcd0fa2429fd",
+    "payloadBytes": 33554432,
+    "payloadSha256": "ab73dca8f8e9c77316a04df7e85c872ec6605dba2a265a8eba7f77d3733e8796",
+    "entries": {
+      "padding-5gib.bin": {
+        "size": 5368709120,
+        "compressed": 5368709120,
+        "method": 0,
+        "offset": 0
+      },
+      "stored.zip": {
+        "size": 108003937,
+        "compressed": 108003937,
+        "method": 0,
+        "offset": 5368709186
+      },
+      "deflated.zip": {
+        "size": 34614048,
+        "compressed": 34624608,
+        "method": 8,
+        "offset": 5476713163
+      }
+    }
+  },
+  "chromium": "158.0.8127.18",
+  "node": "v24.22.2",
+  "kernel": "7.0.0-1017-azure",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "availableCpus": 2,
+  "ramGiB": 7.7,
+  "rounds": 5,
+  "counts": {
+    "local-stored": {
+      "index": {
+        "ms": 47.5,
+        "requests": 0,
+        "bytes": 0
+      },
+      "level1": {
+        "ms": 30,
+        "requests": 0,
+        "bytes": 0
+      },
+      "level2": {
+        "ms": 30.3,
+        "requests": 0,
+        "bytes": 0
+      },
+      "preview": {
+        "ms": 64.4,
+        "requests": 0,
+        "bytes": 0
+      },
+      "savePreview": {
+        "ms": 23.6,
+        "requests": 0,
+        "bytes": 0
+      },
+      "save32MiB": {
+        "ms": 480.3,
+        "requests": 0,
+        "bytes": 0
+      }
+    },
+    "local-deflated": {
+      "index": {
+        "ms": 48.3,
+        "requests": 0,
+        "bytes": 0
+      },
+      "level1": {
+        "ms": 280.7,
+        "requests": 0,
+        "bytes": 0
+      },
+      "level2": {
+        "ms": 246.2,
+        "requests": 0,
+        "bytes": 0
+      },
+      "preview": {
+        "ms": 30.1,
+        "requests": 0,
+        "bytes": 0
+      },
+      "savePreview": {
+        "ms": 25.7,
+        "requests": 0,
+        "bytes": 0
+      },
+      "save32MiB": {
+        "ms": 498.1,
+        "requests": 0,
+        "bytes": 0
+      }
+    },
+    "remote-stored": {
+      "index": {
+        "ms": 63.1,
+        "requests": 5,
+        "bytes": 65855
+      },
+      "level1": {
+        "ms": 46.6,
+        "requests": 4,
+        "bytes": 65654
+      },
+      "level2": {
+        "ms": 30.3,
+        "requests": 4,
+        "bytes": 65841
+      },
+      "preview": {
+        "ms": 81.2,
+        "requests": 2,
+        "bytes": 75
+      },
+      "savePreview": {
+        "ms": 24.2,
+        "requests": 0,
+        "bytes": 0
+      },
+      "save32MiB": {
+        "ms": 645.7,
+        "requests": 3,
+        "bytes": 33554462
+      }
+    },
+    "remote-deflated": {
+      "index": {
+        "ms": 67.8,
+        "requests": 5,
+        "bytes": 65855
+      },
+      "level1": {
+        "ms": 479.3,
+        "requests": 4,
+        "bytes": 34624638
+      },
+      "level2": {
+        "ms": 230.1,
+        "requests": 0,
+        "bytes": 0
+      },
+      "preview": {
+        "ms": 30.1,
+        "requests": 0,
+        "bytes": 0
+      },
+      "savePreview": {
+        "ms": 25.6,
+        "requests": 0,
+        "bytes": 0
+      },
+      "save32MiB": {
+        "ms": 498.2,
+        "requests": 0,
+        "bytes": 0
+      }
+    }
+  },
+  "runs": [
+    {
+      "mode": "local",
+      "branch": "stored",
+      "round": 1,
+      "steps": {
+        "index": {
+          "ms": 48.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 28.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 30,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 80.8,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 27.9,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 480.3,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "deflated",
+      "round": 1,
+      "steps": {
+        "index": {
+          "ms": 48.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 280.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 246.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 24.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 457.1,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "remote",
+      "branch": "stored",
+      "round": 1,
+      "steps": {
+        "index": {
+          "ms": 72.7,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 63.1,
+          "requests": 4,
+          "bytes": 65654
+        },
+        "level2": {
+          "ms": 30.3,
+          "requests": 4,
+          "bytes": 65841
+        },
+        "preview": {
+          "ms": 80.8,
+          "requests": 2,
+          "bytes": 75
+        },
+        "savePreview": {
+          "ms": 24.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 871.6,
+          "requests": 3,
+          "bytes": 33554462
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5368709186,
+          "end": 5368709215,
+          "bytes": 30
+        },
+        {
+          "start": 5368709216,
+          "end": 5368709225,
+          "bytes": 10
+        },
+        {
+          "start": 5476647606,
+          "end": 5476713162,
+          "bytes": 65557
+        },
+        {
+          "start": 5476713084,
+          "end": 5476713140,
+          "bytes": 57
+        },
+        {
+          "start": 5368709226,
+          "end": 5368709255,
+          "bytes": 30
+        },
+        {
+          "start": 5368709256,
+          "end": 5368709266,
+          "bytes": 11
+        },
+        {
+          "start": 5476647527,
+          "end": 5476713083,
+          "bytes": 65557
+        },
+        {
+          "start": 5476712819,
+          "end": 5476713061,
+          "bytes": 243
+        },
+        {
+          "start": 5368709267,
+          "end": 5368709296,
+          "bytes": 30
+        },
+        {
+          "start": 5368709314,
+          "end": 5368709358,
+          "bytes": 45
+        },
+        {
+          "start": 5368709359,
+          "end": 5368709388,
+          "bytes": 30
+        },
+        {
+          "start": 5368709405,
+          "end": 5385486620,
+          "bytes": 16777216
+        },
+        {
+          "start": 5385486621,
+          "end": 5402263836,
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "deflated",
+      "round": 1,
+      "steps": {
+        "index": {
+          "ms": 66.7,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 479.3,
+          "requests": 4,
+          "bytes": 34624638
+        },
+        "level2": {
+          "ms": 213.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.1,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 25.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 482.1,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5476713163,
+          "end": 5476713192,
+          "bytes": 30
+        },
+        {
+          "start": 5476713205,
+          "end": 5493490420,
+          "bytes": 16777216
+        },
+        {
+          "start": 5493490421,
+          "end": 5510267636,
+          "bytes": 16777216
+        },
+        {
+          "start": 5510267637,
+          "end": 5511337812,
+          "bytes": 1070176
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "deflated",
+      "round": 2,
+      "steps": {
+        "index": {
+          "ms": 67.8,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 464.2,
+          "requests": 4,
+          "bytes": 34624638
+        },
+        "level2": {
+          "ms": 230.1,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.1,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 25.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 461.4,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5476713163,
+          "end": 5476713192,
+          "bytes": 30
+        },
+        {
+          "start": 5476713205,
+          "end": 5493490420,
+          "bytes": 16777216
+        },
+        {
+          "start": 5493490421,
+          "end": 5510267636,
+          "bytes": 16777216
+        },
+        {
+          "start": 5510267637,
+          "end": 5511337812,
+          "bytes": 1070176
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "stored",
+      "round": 2,
+      "steps": {
+        "index": {
+          "ms": 62.8,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 31.1,
+          "requests": 4,
+          "bytes": 65654
+        },
+        "level2": {
+          "ms": 31.3,
+          "requests": 4,
+          "bytes": 65841
+        },
+        "preview": {
+          "ms": 80.6,
+          "requests": 2,
+          "bytes": 75
+        },
+        "savePreview": {
+          "ms": 24.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 655.5,
+          "requests": 3,
+          "bytes": 33554462
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5368709186,
+          "end": 5368709215,
+          "bytes": 30
+        },
+        {
+          "start": 5368709216,
+          "end": 5368709225,
+          "bytes": 10
+        },
+        {
+          "start": 5476647606,
+          "end": 5476713162,
+          "bytes": 65557
+        },
+        {
+          "start": 5476713084,
+          "end": 5476713140,
+          "bytes": 57
+        },
+        {
+          "start": 5368709226,
+          "end": 5368709255,
+          "bytes": 30
+        },
+        {
+          "start": 5368709256,
+          "end": 5368709266,
+          "bytes": 11
+        },
+        {
+          "start": 5476647527,
+          "end": 5476713083,
+          "bytes": 65557
+        },
+        {
+          "start": 5476712819,
+          "end": 5476713061,
+          "bytes": 243
+        },
+        {
+          "start": 5368709267,
+          "end": 5368709296,
+          "bytes": 30
+        },
+        {
+          "start": 5368709314,
+          "end": 5368709358,
+          "bytes": 45
+        },
+        {
+          "start": 5368709359,
+          "end": 5368709388,
+          "bytes": 30
+        },
+        {
+          "start": 5368709405,
+          "end": 5385486620,
+          "bytes": 16777216
+        },
+        {
+          "start": 5385486621,
+          "end": 5402263836,
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "mode": "local",
+      "branch": "deflated",
+      "round": 2,
+      "steps": {
+        "index": {
+          "ms": 43.8,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 280,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 247,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.1,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 23.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 498.1,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "stored",
+      "round": 2,
+      "steps": {
+        "index": {
+          "ms": 46.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 29.9,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 30.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 64.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 23.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 468.2,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "stored",
+      "round": 3,
+      "steps": {
+        "index": {
+          "ms": 49.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 30,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 30.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 81,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 22.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 497.8,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "deflated",
+      "round": 3,
+      "steps": {
+        "index": {
+          "ms": 46,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 280.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 229.9,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 41.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 455.9,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "remote",
+      "branch": "stored",
+      "round": 3,
+      "steps": {
+        "index": {
+          "ms": 65.3,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 46.6,
+          "requests": 4,
+          "bytes": 65654
+        },
+        "level2": {
+          "ms": 31.5,
+          "requests": 4,
+          "bytes": 65841
+        },
+        "preview": {
+          "ms": 98,
+          "requests": 2,
+          "bytes": 75
+        },
+        "savePreview": {
+          "ms": 24.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 644.9,
+          "requests": 3,
+          "bytes": 33554462
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5368709186,
+          "end": 5368709215,
+          "bytes": 30
+        },
+        {
+          "start": 5368709216,
+          "end": 5368709225,
+          "bytes": 10
+        },
+        {
+          "start": 5476647606,
+          "end": 5476713162,
+          "bytes": 65557
+        },
+        {
+          "start": 5476713084,
+          "end": 5476713140,
+          "bytes": 57
+        },
+        {
+          "start": 5368709226,
+          "end": 5368709255,
+          "bytes": 30
+        },
+        {
+          "start": 5368709256,
+          "end": 5368709266,
+          "bytes": 11
+        },
+        {
+          "start": 5476647527,
+          "end": 5476713083,
+          "bytes": 65557
+        },
+        {
+          "start": 5476712819,
+          "end": 5476713061,
+          "bytes": 243
+        },
+        {
+          "start": 5368709267,
+          "end": 5368709296,
+          "bytes": 30
+        },
+        {
+          "start": 5368709314,
+          "end": 5368709358,
+          "bytes": 45
+        },
+        {
+          "start": 5368709359,
+          "end": 5368709388,
+          "bytes": 30
+        },
+        {
+          "start": 5368709405,
+          "end": 5385486620,
+          "bytes": 16777216
+        },
+        {
+          "start": 5385486621,
+          "end": 5402263836,
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "deflated",
+      "round": 3,
+      "steps": {
+        "index": {
+          "ms": 72.6,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 463.7,
+          "requests": 4,
+          "bytes": 34624638
+        },
+        "level2": {
+          "ms": 227.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 29.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 32.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 550.7,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5476713163,
+          "end": 5476713192,
+          "bytes": 30
+        },
+        {
+          "start": 5476713205,
+          "end": 5493490420,
+          "bytes": 16777216
+        },
+        {
+          "start": 5493490421,
+          "end": 5510267636,
+          "bytes": 16777216
+        },
+        {
+          "start": 5510267637,
+          "end": 5511337812,
+          "bytes": 1070176
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "deflated",
+      "round": 4,
+      "steps": {
+        "index": {
+          "ms": 169,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 656.3,
+          "requests": 4,
+          "bytes": 34624638
+        },
+        "level2": {
+          "ms": 230.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 60.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 514.6,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5476713163,
+          "end": 5476713192,
+          "bytes": 30
+        },
+        {
+          "start": 5476713205,
+          "end": 5493490420,
+          "bytes": 16777216
+        },
+        {
+          "start": 5493490421,
+          "end": 5510267636,
+          "bytes": 16777216
+        },
+        {
+          "start": 5510267637,
+          "end": 5511337812,
+          "bytes": 1070176
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "stored",
+      "round": 4,
+      "steps": {
+        "index": {
+          "ms": 62.2,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 47,
+          "requests": 4,
+          "bytes": 65654
+        },
+        "level2": {
+          "ms": 29.6,
+          "requests": 4,
+          "bytes": 65841
+        },
+        "preview": {
+          "ms": 81.2,
+          "requests": 2,
+          "bytes": 75
+        },
+        "savePreview": {
+          "ms": 24.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 645.7,
+          "requests": 3,
+          "bytes": 33554462
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5368709186,
+          "end": 5368709215,
+          "bytes": 30
+        },
+        {
+          "start": 5368709216,
+          "end": 5368709225,
+          "bytes": 10
+        },
+        {
+          "start": 5476647606,
+          "end": 5476713162,
+          "bytes": 65557
+        },
+        {
+          "start": 5476713084,
+          "end": 5476713140,
+          "bytes": 57
+        },
+        {
+          "start": 5368709226,
+          "end": 5368709255,
+          "bytes": 30
+        },
+        {
+          "start": 5368709256,
+          "end": 5368709266,
+          "bytes": 11
+        },
+        {
+          "start": 5476647527,
+          "end": 5476713083,
+          "bytes": 65557
+        },
+        {
+          "start": 5476712819,
+          "end": 5476713061,
+          "bytes": 243
+        },
+        {
+          "start": 5368709267,
+          "end": 5368709296,
+          "bytes": 30
+        },
+        {
+          "start": 5368709314,
+          "end": 5368709358,
+          "bytes": 45
+        },
+        {
+          "start": 5368709359,
+          "end": 5368709388,
+          "bytes": 30
+        },
+        {
+          "start": 5368709405,
+          "end": 5385486620,
+          "bytes": 16777216
+        },
+        {
+          "start": 5385486621,
+          "end": 5402263836,
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "mode": "local",
+      "branch": "deflated",
+      "round": 4,
+      "steps": {
+        "index": {
+          "ms": 75.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 281.1,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 231.6,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 32,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 499.7,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "stored",
+      "round": 4,
+      "steps": {
+        "index": {
+          "ms": 45.8,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 30.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 30.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 64.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 23.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 479.5,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "stored",
+      "round": 5,
+      "steps": {
+        "index": {
+          "ms": 47.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 30,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 30.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 64.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 22.8,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 480.7,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "local",
+      "branch": "deflated",
+      "round": 5,
+      "steps": {
+        "index": {
+          "ms": 48.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level1": {
+          "ms": 294.8,
+          "requests": 0,
+          "bytes": 0
+        },
+        "level2": {
+          "ms": 246.2,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 30.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 25.7,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 507.6,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": []
+    },
+    {
+      "mode": "remote",
+      "branch": "stored",
+      "round": 5,
+      "steps": {
+        "index": {
+          "ms": 63.1,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 46.6,
+          "requests": 4,
+          "bytes": 65654
+        },
+        "level2": {
+          "ms": 30.2,
+          "requests": 4,
+          "bytes": 65841
+        },
+        "preview": {
+          "ms": 81.2,
+          "requests": 2,
+          "bytes": 75
+        },
+        "savePreview": {
+          "ms": 22.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 617.8,
+          "requests": 3,
+          "bytes": 33554462
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5368709186,
+          "end": 5368709215,
+          "bytes": 30
+        },
+        {
+          "start": 5368709216,
+          "end": 5368709225,
+          "bytes": 10
+        },
+        {
+          "start": 5476647606,
+          "end": 5476713162,
+          "bytes": 65557
+        },
+        {
+          "start": 5476713084,
+          "end": 5476713140,
+          "bytes": 57
+        },
+        {
+          "start": 5368709226,
+          "end": 5368709255,
+          "bytes": 30
+        },
+        {
+          "start": 5368709256,
+          "end": 5368709266,
+          "bytes": 11
+        },
+        {
+          "start": 5476647527,
+          "end": 5476713083,
+          "bytes": 65557
+        },
+        {
+          "start": 5476712819,
+          "end": 5476713061,
+          "bytes": 243
+        },
+        {
+          "start": 5368709267,
+          "end": 5368709296,
+          "bytes": 30
+        },
+        {
+          "start": 5368709314,
+          "end": 5368709358,
+          "bytes": 45
+        },
+        {
+          "start": 5368709359,
+          "end": 5368709388,
+          "bytes": 30
+        },
+        {
+          "start": 5368709405,
+          "end": 5385486620,
+          "bytes": 16777216
+        },
+        {
+          "start": 5385486621,
+          "end": 5402263836,
+          "bytes": 16777216
+        }
+      ]
+    },
+    {
+      "mode": "remote",
+      "branch": "deflated",
+      "round": 5,
+      "steps": {
+        "index": {
+          "ms": 62.4,
+          "requests": 5,
+          "bytes": 65855
+        },
+        "level1": {
+          "ms": 547.2,
+          "requests": 4,
+          "bytes": 34624638
+        },
+        "level2": {
+          "ms": 434.4,
+          "requests": 0,
+          "bytes": 0
+        },
+        "preview": {
+          "ms": 29.3,
+          "requests": 0,
+          "bytes": 0
+        },
+        "savePreview": {
+          "ms": 24.5,
+          "requests": 0,
+          "bytes": 0
+        },
+        "save32MiB": {
+          "ms": 498.2,
+          "requests": 0,
+          "bytes": 0
+        }
+      },
+      "ranges": [
+        {
+          "start": 0,
+          "end": 1,
+          "bytes": 2
+        },
+        {
+          "start": 5511272574,
+          "end": 5511338130,
+          "bytes": 65557
+        },
+        {
+          "start": 5511338089,
+          "end": 5511338108,
+          "bytes": 20
+        },
+        {
+          "start": 5511338033,
+          "end": 5511338088,
+          "bytes": 56
+        },
+        {
+          "start": 5511337813,
+          "end": 5511338032,
+          "bytes": 220
+        },
+        {
+          "start": 5476713163,
+          "end": 5476713192,
+          "bytes": 30
+        },
+        {
+          "start": 5476713205,
+          "end": 5493490420,
+          "bytes": 16777216
+        },
+        {
+          "start": 5493490421,
+          "end": 5510267636,
+          "bytes": 16777216
+        },
+        {
+          "start": 5510267637,
+          "end": 5511337812,
+          "bytes": 1070176
+        }
+      ]
+    }
+  ],
+  "assets": [
+    "/",
+    "/_astro/index.BZmJ3NQT.css",
+    "/mark.svg",
+    "/_astro/Workspace.astro_astro_type_script_index_0_lang.C6Eck0xN.js",
+    "/icons.svg",
+    "/fonts/InstrumentSans.woff2",
+    "/fonts/instrument-serif-italic.woff2",
+    "/_astro/archive.Bi8SXlH5.js"
+  ]
+}
