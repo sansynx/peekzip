@@ -4,7 +4,7 @@
 
 Open a ZIP, see what’s inside, and download the file you came for. Choose a ZIP from your device or paste a direct link. For remote archives, peekzip reads the file list first and fetches the bytes needed for the entry you select.
 
-**[Open peekzip](https://peekzip.vercel.app)** and choose **Try a sample** to explore a real archive with a map, a CSV, and two nested ZIPs.
+**[Open the live dashboard](https://peekzip.vercel.app)** and choose **Try a sample** to explore a real archive with a map, a CSV, and two nested ZIPs.
 
 ## What you can do
 
