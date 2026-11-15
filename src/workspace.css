@@ -294,7 +294,8 @@
   font-size: 13px;
   font-weight: 600;
 }
-#workspace .pz-actions .pz-primary {
+#workspace .pz-actions:not(:has(#ws-enter:enabled:not([hidden]))) .pz-primary,
+#workspace .pz-actions #ws-enter:enabled {
   background: var(--ws-action);
   color: white;
   border-color: var(--ws-action);
@@ -313,6 +314,9 @@
   border: 1px solid var(--ws-line);
   border-radius: 6px;
   background: var(--paper, #f7f5ef);
+}
+.pz-preview:has(#ws-enter:not([hidden])) .pz-stage {
+  min-height: 0;
 }
 .pz-stage:has(> .pz-message),
 .pz-stage:has(> img) {

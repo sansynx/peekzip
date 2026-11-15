@@ -131,6 +131,9 @@ p {
   font-size: 14px;
   font-weight: 600;
 }
+.help-short {
+  display: none;
+}
 .quiet {
   border: 0;
   padding: 0 8px;
@@ -492,6 +495,12 @@ dialog p {
   }
 }
 @media (max-width: 360px) {
+  .help-long {
+    display: none;
+  }
+  .help-short {
+    display: inline;
+  }
   :root {
     --gutter: 11px;
   }
