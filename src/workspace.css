@@ -77,7 +77,7 @@
   grid-template-columns: minmax(225px, 0.69fr) minmax(0, 1.55fr);
   border: 1px solid var(--ws-line);
   background: var(--ws-paper);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 .pz-index {
@@ -120,7 +120,7 @@
   background: var(--ws-paper);
   min-height: 44px;
   padding: 9px 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
 }
 #workspace .pz-search input {
   min-width: 0;
@@ -143,7 +143,7 @@
   background: transparent;
   text-align: left;
   padding: 12px 6px;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
 }
 #workspace .pz-row:hover {
   background: var(--ws-selected);
@@ -159,7 +159,7 @@
   border: 1px solid #c8c5bb;
   color: var(--ws-ink);
   background: var(--ws-paper);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
@@ -290,7 +290,7 @@
   border: 1px solid var(--ws-line);
   min-height: 44px;
   padding: 9px 11px;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   font-size: 13px;
   font-weight: 600;
 }
@@ -312,7 +312,7 @@
   max-height: 65vh;
   overflow: auto;
   border: 1px solid var(--ws-line);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--paper, #f7f5ef);
 }
 .pz-preview:has(#ws-enter:not([hidden])) .pz-stage {
@@ -493,7 +493,7 @@
     gap: 4px;
     border: 1px solid var(--ws-line);
     background: var(--paper);
-    border-radius: 12px;
+    border-radius: var(--radius-control);
     margin-bottom: 10px;
     position: sticky;
     top: 4px;
@@ -505,7 +505,7 @@
     align-items: center;
     gap: 7px;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--radius-control);
     flex: 1;
     min-height: 44px;
     background: transparent;
@@ -547,4 +547,29 @@
   .pz-preview {
     scroll-margin-top: 66px;
   }
+}
+
+.pz-workgrid {
+  border-color: var(--frame-edge);
+  box-shadow: var(--window-shadow);
+}
+.pz-section-title h2 {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 18px;
+}
+#workspace .pz-actions button,
+.pz-switch {
+  border-color: var(--frame-edge);
+}
+#workspace .pz-actions button:not(.pz-primary):not(#ws-enter),
+#workspace .pz-switch button[aria-pressed="true"] {
+  box-shadow: var(--bevel);
+}
+.pz-search,
+.pz-stage {
+  box-shadow: inset 1px 1px #abab9e;
 }
