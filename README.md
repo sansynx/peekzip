@@ -10,7 +10,7 @@ Open a ZIP, see what’s inside, and download the file you came for. Choose a ZI
 
 - Search filenames and paths, preview text, images, or CSV tables, and save individual entries
 - Open a ZIP inside another ZIP and return to the parent archive
-- Copy a link to an entry in a remote archive, including an entry inside a nested ZIP
+- Share a link to a specific entry, even inside a nested ZIP. Hosted archives open directly. Local archives open when the recipient chooses their copy
 - On phones, switch between **Files** and **Preview** without losing your search. With a keyboard, use the arrow keys, Home, or End in the index, Enter to preview, and Escape to return or cancel a read
 
 ## What leaves your device
@@ -19,7 +19,7 @@ Local archives stay in the browser. Opening a remote ZIP connects your browser d
 
 The remote host must return HTTP 206 responses to byte-range requests. Cross-origin hosts must allow the viewer origin through CORS and expose the `Content-Range` header. If the host only offers a full download, peekzip stops.
 
-A shared link includes the original archive URL and selected path in the URL fragment. A recipient can see both and can access whatever the original URL allows, including other entries. Sharing is available for remote URLs without query strings or fragments.
+A hosted archive link includes the original archive URL and selected path in the URL fragment. A recipient can see both and can access whatever the original URL allows, including other entries. Hosted links are available for remote URLs without query strings or fragments. For a local ZIP, **Share file** creates a link containing the archive name, byte size and selected path. Send the archive separately if needed. The recipient chooses their matching local copy and peekzip opens the selected entry.
 
 ## Measured performance
 

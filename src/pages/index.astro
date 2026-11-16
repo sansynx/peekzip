@@ -182,31 +182,57 @@ import "../style.css";
       window.addEventListener("blur", () => zone.classList.remove("dragging"));
       const dialog = document.querySelector<HTMLDialogElement>("#info-dialog")!;
       const content = {
-        help: [
-          "How it works",
-          "Paste a direct ZIP link or choose a file from your device. Search the archive, then select an entry to preview or save it.",
-          "For remote archives, the host must allow byte-range requests and cross-origin browser access. You can share a preview link when the recipient can access the same archive.",
-        ],
-        privacy: [
-          "Your files stay yours",
-          "Local archives are read in your browser. Opening a remote archive connects your browser directly to its host, which can see those requests.",
-          "A preview link includes the source address and filename. Anyone with the link can see both and may be able to open the whole source archive.",
-        ],
+        help: {
+          title: "How it works",
+          sections: [
+            [
+              "Open an archive",
+              "Choose a ZIP from your device or paste a direct ZIP URL. For remote files the host must support byte ranges and allow access from this site.",
+            ],
+            [
+              "Find the file",
+              "Search by name or folder, then select a row to preview it. On phones, tap Files to go back. Use Open nested ZIP to look inside another archive.",
+            ],
+            [
+              "Save or share",
+              "Save file downloads that entry. Share file creates a link to this exact path. For a local ZIP, the recipient needs their own copy. Try a sample to see a hosted file link in action.",
+            ],
+          ],
+        },
+        privacy: {
+          title: "What leaves your device",
+          sections: [
+            [
+              "From your device",
+              "Your ZIP and its contents stay in this browser. Peekzip has no upload or archive storage service.",
+            ],
+            [
+              "From a URL",
+              "Your browser requests the index and selected bytes directly from the ZIP host. That host sees your IP and the ranges you request.",
+            ],
+            [
+              "When you share",
+              "Links expose the selected path and any nested ZIP names. Local links also include the archive name and size. Hosted links include the source URL and anyone with access can browse the rest of the archive. URLs with a query or fragment cannot be shared.",
+            ],
+          ],
+        },
       };
       document
         .querySelectorAll<HTMLButtonElement>("[data-dialog]")
         .forEach((button) =>
           button.addEventListener("click", () => {
-            const [title, ...paragraphs] =
+            const { title, sections } =
               content[button.dataset.dialog as keyof typeof content];
             dialog.querySelector("h2")!.textContent = title;
-            dialog.querySelector(".dialog-copy")!.replaceChildren(
-              ...paragraphs.map((text) =>
-                Object.assign(document.createElement("p"), {
-                  textContent: text,
-                }),
-              ),
-            );
+            const list = document.createElement("dl");
+            for (const [heading, copy] of sections) {
+              const term = document.createElement("dt");
+              const detail = document.createElement("dd");
+              term.textContent = heading;
+              detail.textContent = copy;
+              list.append(term, detail);
+            }
+            dialog.querySelector(".dialog-copy")!.replaceChildren(list);
             dialog.showModal();
           }),
         );
