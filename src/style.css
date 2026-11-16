@@ -572,6 +572,7 @@ dialog p {
 .pz-message .cli-spinner {
   margin-inline-end: 7px;
 }
+.open-feedback:has([data-awaiting-file]) .cli-spinner,
 .open-feedback:not(:has(#open-cancel:not([hidden]))) .cli-spinner {
   display: none;
 }
@@ -734,4 +735,30 @@ dialog {
 }
 .note span {
   background: var(--paper);
+}
+.dialog-copy dl {
+  margin: 0;
+}
+.dialog-copy dt {
+  margin-top: 16px;
+  font-weight: 700;
+}
+.dialog-copy dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+#share-dialog label {
+  display: block;
+  margin-top: 18px;
+}
+#share-url {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  font: 13px var(--mono);
+}
+#share-copy {
+  margin-top: 12px;
+  min-height: 44px;
 }

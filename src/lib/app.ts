@@ -174,7 +174,23 @@ function clearSession() {
   stage.replaceChildren();
 }
 
+let localLink:
+  | { name: string; size: number; target: Target; ancestry: Target[] }
+  | undefined;
+
+function chooseArchive(file: File) {
+  const link = localLink;
+  if (link && (link.size !== file.size || link.name !== file.name)) {
+    status.textContent = `Choose ${link.name} (${displaySize(link.size)}) to follow this link, or cancel to open another archive`;
+    return;
+  }
+  cleanAddress();
+  void open(file, link?.target, false, link?.ancestry);
+}
+
 function cleanAddress() {
+  localLink = undefined;
+  delete status.dataset.awaitingFile;
   if (location.hash)
     history.replaceState(null, "", location.pathname + location.search);
 }
@@ -282,13 +298,14 @@ function showFiles() {
 }
 
 function focusFile(position: number) {
-  const item = matches[Math.min(Math.max(0, position), matches.length - 1)];
+  const bounded = Math.min(Math.max(0, position), matches.length - 1);
+  const item = matches[bounded];
   if (!item) {
     search.focus();
     return;
   }
   focusIndex = item.index;
-  const offset = Math.floor(matches.indexOf(item) / PAGE_SIZE) * PAGE_SIZE;
+  const offset = Math.floor(bounded / PAGE_SIZE) * PAGE_SIZE;
   if (offset !== pageOffset) {
     pageOffset = offset;
     showFiles();
@@ -424,11 +441,12 @@ async function pick(item: Entry, reveal = false) {
   backToFiles.hidden = false;
   previewView.disabled = false;
   if (reveal) setPanel("preview");
-  for (const row of fileList.querySelectorAll<HTMLElement>("[data-index]"))
-    row.setAttribute(
-      "aria-current",
-      String(Number(row.dataset.index) === item.index),
-    );
+  fileList
+    .querySelector('[aria-current="true"]')
+    ?.setAttribute("aria-current", "false");
+  fileList
+    .querySelector(`[data-index="${item.index}"]`)
+    ?.setAttribute("aria-current", "true");
   get("ws-filename").textContent = basename(item.name);
   if (reveal) {
     const heading = get("ws-filename");
@@ -449,7 +467,7 @@ async function pick(item: Entry, reveal = false) {
   ]
     .filter(Boolean)
     .join(" · ");
-  share.hidden = !canShare(source);
+  share.hidden = false;
   save.hidden = item.size > SAVE_LIMIT;
   enter.hidden = extension(item.name) !== "zip";
   enter.disabled = false;
@@ -527,7 +545,7 @@ function displayArchive() {
   get("ws-meta").textContent =
     source instanceof URL
       ? `Remote archive · ${source.host} · ${canShare(source) ? "Read directly from its source" : "Sharing is disabled for URLs with query parameters or fragments."}`
-      : "Local archive · Files stay on this device. Sharing requires a public archive URL.";
+      : "Local archive · Files stay on this device";
   const crumb = get("ws-breadcrumb");
   crumb.textContent = [
     rootName,
@@ -727,14 +745,45 @@ async function download() {
   }
 }
 
-async function copyLink() {
-  if (!selected || !canShare(source)) return;
+const shareDialog = get<HTMLDialogElement>("share-dialog");
+const shareUrl = get<HTMLInputElement>("share-url");
+shareDialog
+  .querySelector(".dismiss")!
+  .addEventListener("click", () => shareDialog.close());
+get("share-copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(shareUrl.value);
+    get("share-status").textContent = "Link copied";
+  } catch {
+    shareUrl.focus();
+    shareUrl.select();
+    get("share-status").textContent =
+      "The link is selected — use your device’s copy command";
+  }
+});
+function showShareDialog() {
+  if (!selected || !source || !archive) return;
+  const restricted = source instanceof URL && !canShare(source);
+  get("share-detail").textContent =
+    source instanceof File
+      ? "Send the ZIP separately if needed. The link includes the archive name, size and file path. The recipient chooses their copy to open this file."
+      : restricted
+        ? "Sharing is unavailable for a source URL containing a query or fragment, which can include an access token. Open a shareable direct ZIP URL to create a file link."
+        : "This link opens the selected file. It includes the source URL and path, and anyone with access to the ZIP can browse its other files.";
+  shareUrl.hidden = restricted;
+  shareDialog.querySelector("label")!.hidden = restricted;
+  get("share-copy").hidden = restricted;
+  get("share-status").textContent = "";
+  shareUrl.value = "";
+  shareDialog.showModal();
+  if (restricted) return;
   const url = new URL(location.pathname, location.origin);
-  if (!archive) return;
   const item = targetFor(selected, archive);
   const params = new URLSearchParams({
     v: "1",
-    src: source.href,
+    ...(source instanceof File
+      ? { local: source.name, size: String(source.size) }
+      : { src: source.href }),
     file: item.name,
   });
   if (item.index !== undefined) params.set("index", String(item.index));
@@ -749,21 +798,7 @@ async function copyLink() {
     );
   }
   url.hash = params.toString();
-  const signal = reading.signal;
-  try {
-    await navigator.clipboard.writeText(url.href);
-    if (!signal.aborted)
-      notice.textContent =
-        "Preview link copied. It includes the archive address.";
-  } catch {
-    if (signal.aborted) return;
-    const field = element("input", "pz-copy");
-    field.readOnly = true;
-    field.value = url.href;
-    field.setAttribute("aria-label", "Preview link");
-    notice.replaceChildren(field);
-    field.select();
-  }
+  shareUrl.value = url.href;
 }
 
 get("open-form").addEventListener("submit", (event) => {
@@ -787,8 +822,7 @@ get("sample").addEventListener("click", () => {
 fileInput.addEventListener("change", () => {
   const file = fileInput.files?.[0];
   if (file) {
-    cleanAddress();
-    void open(file);
+    chooseArchive(file);
   }
   fileInput.value = "";
 });
@@ -829,8 +863,7 @@ document.addEventListener("drop", (event) => {
   }
   const file = event.dataTransfer.files[0];
   if (file) {
-    cleanAddress();
-    void open(file);
+    chooseArchive(file);
   }
 });
 cancelOpen?.addEventListener("click", () => {
@@ -850,8 +883,13 @@ fileList.addEventListener("focusin", (event) => {
   const button = event.target;
   if (!(button instanceof HTMLButtonElement) || !button.dataset.index) return;
   focusIndex = Number(button.dataset.index);
-  for (const row of fileList.querySelectorAll<HTMLButtonElement>("button"))
-    row.tabIndex = row === button ? 0 : -1;
+  const previous = fileList.querySelector<HTMLButtonElement>(
+    'button[tabindex="0"]',
+  );
+  if (previous !== button) {
+    if (previous) previous.tabIndex = -1;
+    button.tabIndex = 0;
+  }
 });
 fileList.addEventListener("keydown", (event) => {
   const position = matches.findIndex((item) => item.index === focusIndex);
@@ -891,9 +929,7 @@ fileList.addEventListener("click", (event) => {
       ? event.target.closest<HTMLElement>("[data-index]")
       : null;
   if (!row) return;
-  const entry = archive?.entries.find(
-    (item) => item.index === Number(row.dataset.index),
-  );
+  const entry = archive?.entries[Number(row.dataset.index)];
   if (entry) void pick(entry, true);
 });
 enter.addEventListener("click", () => {
@@ -901,7 +937,7 @@ enter.addEventListener("click", () => {
 });
 parentButton.addEventListener("click", ascend);
 save.addEventListener("click", download);
-share.addEventListener("click", copyLink);
+share.addEventListener("click", showShareDialog);
 search.addEventListener("input", () => {
   pageOffset = 0;
   filterFiles();
@@ -912,12 +948,19 @@ previous.addEventListener("click", () => focusFile(pageOffset - PAGE_SIZE));
 function followLink() {
   const parts = new URLSearchParams(location.hash.slice(1));
   const src = parts.get("src");
-  if (parts.get("v") !== "1" || !src) return;
+  const local = parts.get("local");
+  if (localLink) {
+    localLink = undefined;
+    delete status.dataset.awaitingFile;
+    status.textContent = "";
+    if (cancelOpen) cancelOpen.hidden = true;
+  }
+  if (parts.get("v") !== "1" || (!src && !local)) return;
   try {
-    const url = parseUrl(src);
+    const url = src ? parseUrl(src) : undefined;
     const name = parts.get("file");
     const index = parts.get("index");
-    if (!canShare(url))
+    if (url && !canShare(url))
       throw new Error(
         "This link contains a private source URL. Open the archive directly instead.",
       );
@@ -940,17 +983,33 @@ function followLink() {
         throw new Error("Invalid nested archive link.");
       return { name: segment[0], index: segment[1] } satisfies Target;
     });
-    void open(
-      url,
-      name
-        ? {
-            name,
-            index: index && /^\d+$/.test(index) ? Number(index) : undefined,
-          }
-        : undefined,
-      false,
-      ancestry,
-    );
+    const target = name
+      ? {
+          name,
+          index: index && /^\d+$/.test(index) ? Number(index) : undefined,
+        }
+      : undefined;
+    if (url) {
+      void open(url, target, false, ancestry);
+      return;
+    }
+    const size = Number(parts.get("size"));
+    if (
+      !local ||
+      !target ||
+      !parts.has("size") ||
+      !Number.isSafeInteger(size) ||
+      size < 0
+    )
+      throw new Error("Invalid local archive link");
+    clearSession();
+    workspace.hidden = true;
+    landing.hidden = false;
+    localLink = { name: local, size, target, ancestry };
+    status.dataset.awaitingFile = "";
+    status.textContent = `Choose your copy of ${local} to preview ${name}`;
+    if (cancelOpen) cancelOpen.hidden = false;
+    fileInput.focus();
   } catch (err) {
     home();
     status.textContent = message(err);

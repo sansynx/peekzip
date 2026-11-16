@@ -77,13 +77,35 @@ import "../workspace.css";
         Use the up and down arrows to move through files, then Enter to open a
         preview.
       </p>
-      <div
-        id="ws-list"
-        class="pz-file-list"
-        role="group"
-        aria-label="Archive files"
-        aria-describedby="ws-keys"
-      ></div>
+      <div class="scroll-frame">
+        <div
+          id="ws-list"
+          class="pz-file-list"
+          role="group"
+          aria-label="Archive files"
+          aria-describedby="ws-keys"
+        ></div>
+        <input
+          class="scroll-control scroll-y"
+          type="range"
+          min="0"
+          step="1"
+          value="0"
+          aria-label="File index vertical scroll"
+          aria-controls="ws-list"
+          hidden
+        />
+        <input
+          class="scroll-control scroll-x"
+          type="range"
+          min="0"
+          step="1"
+          value="0"
+          aria-label="File index horizontal scroll"
+          aria-controls="ws-list"
+          hidden
+        />
+      </div>
       <div class="pz-pager" id="ws-pager" hidden>
         <button id="ws-prev" type="button" aria-label="Previous page">
           ← Previous
@@ -113,14 +135,42 @@ import "../workspace.css";
           </h2>
           <p id="ws-filemeta" class="pz-info"></p>
         </div>
+        <button type="button" id="ws-share" hidden>
+          <svg aria-hidden="true">
+            <use href="/icons.svg#link" />
+          </svg>
+          Share file
+        </button>
       </div>
-      <div
-        id="ws-body"
-        class="pz-stage"
-        role="region"
-        aria-label="Preview contents"
-        tabindex="0"
-      ></div>
+      <div class="scroll-frame">
+        <div
+          id="ws-body"
+          class="pz-stage"
+          role="region"
+          aria-label="Preview contents"
+          tabindex="0"
+        ></div>
+        <input
+          class="scroll-control scroll-y"
+          type="range"
+          min="0"
+          step="1"
+          value="0"
+          aria-label="File preview vertical scroll"
+          aria-controls="ws-body"
+          hidden
+        />
+        <input
+          class="scroll-control scroll-x"
+          type="range"
+          min="0"
+          step="1"
+          value="0"
+          aria-label="File preview horizontal scroll"
+          aria-controls="ws-body"
+          hidden
+        />
+      </div>
       <div class="pz-actions" role="group" aria-label="File actions">
         <button type="button" id="ws-enter" hidden>
           <svg aria-hidden="true">
@@ -128,12 +178,7 @@ import "../workspace.css";
           </svg>{" "}
           Open nested ZIP
         </button>
-        <button type="button" id="ws-share" hidden>
-          <svg aria-hidden="true">
-            <use href="/icons.svg#link" />
-          </svg>
-          Copy link
-        </button>
+
         <button type="button" class="pz-primary" id="ws-save" hidden>
           <svg aria-hidden="true">
             <use href="/icons.svg#download" />
@@ -149,6 +194,26 @@ import "../workspace.css";
     </section>
   </div>
 </section>
+<dialog id="share-dialog" aria-labelledby="share-title">
+  <div class="dialog-head">
+    <h2 id="share-title">Share this file</h2>
+    <button type="button" class="dismiss" aria-label="Close dialog">
+      <svg aria-hidden="true">
+        <use href="/icons.svg#x" />
+      </svg>
+    </button>
+  </div>
+  <p id="share-detail"></p>
+  <label for="share-url" class="field-label">
+    File link
+  </label>
+  <input id="share-url" type="url" readonly />
+  <button id="share-copy" class="open-btn" type="button">
+    Copy file link
+  </button>
+  <p role="status" id="share-status"></p>
+</dialog>
 <script>
+  import "../lib/scroll";
   import "../lib/app";
 </script>
