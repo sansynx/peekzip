@@ -928,63 +928,65 @@ function changePage(button: HTMLButtonElement) {
   setPanel("files");
   button.click();
 }
-const shortcuts = new Map<string, [string, () => void]>([
+const shortcuts = new Map<string, () => void>();
+function registerShortcuts(
+  listId: string,
+  commands: [string, string, () => void][],
+) {
+  const list = get(listId);
+  for (const [key, label, run] of commands) {
+    shortcuts.set(key, run);
+    const term = element("dt", "", label);
+    const definition = document.createElement("dd");
+    definition.append(element("kbd", "", key));
+    list.append(term, definition);
+  }
+}
+registerShortcuts("keys-index", [
   [
     "/",
-    [
-      "Find a file",
-      () => {
-        setPanel("files");
-        search.focus();
-        search.select();
-      },
-    ],
+    "Find a file",
+    () => {
+      setPanel("files");
+      search.focus();
+      search.select();
+    },
   ],
-  ["j", ["Preview next file", () => previewNeighbor(1)]],
-  ["k", ["Preview previous file", () => previewNeighbor(-1)]],
-  ["[", ["Previous file list page", () => changePage(previous)]],
-  ["]", ["Next file list page", () => changePage(more)]],
-  ["i", ["Return to file index", refocusList]],
+  ["i", "Go to the file index", refocusList],
+  ["[", "Previous results page", () => changePage(previous)],
+  ["]", "Next results page", () => changePage(more)],
+]);
+registerShortcuts("keys-preview", [
+  ["j", "Preview next file", () => previewNeighbor(1)],
+  ["k", "Preview previous file", () => previewNeighbor(-1)],
   [
     "v",
-    [
-      "Focus selected preview",
-      () => {
-        if (selected) {
-          setPanel("preview");
-          stage.focus();
-        }
-      },
-    ],
-  ],
-  [
-    "u",
-    [
-      "Go up one ZIP level",
-      () => {
-        if (!parentButton.hidden) parentButton.click();
-      },
-    ],
+    "Go to the preview",
+    () => {
+      if (selected) {
+        setPanel("preview");
+        stage.focus();
+      }
+    },
   ],
   [
     "s",
-    [
-      "Share selected file",
-      () => {
-        if (selected) share.click();
-      },
-    ],
+    "Share this file",
+    () => {
+      if (selected) share.click();
+    },
   ],
-  ["?", ["Show keyboard shortcuts", showKeys]],
 ]);
-const keysList = get("keys-list");
-for (const [key, [description]] of shortcuts) {
-  const term = document.createElement("dt");
-  term.textContent = description;
-  const definition = document.createElement("dd");
-  definition.append(element("kbd", "", key));
-  keysList.append(term, definition);
-}
+registerShortcuts("keys-archive", [
+  [
+    "u",
+    "Go to the parent ZIP",
+    () => {
+      if (!parentButton.hidden) parentButton.click();
+    },
+  ],
+  ["?", "Open this guide", showKeys],
+]);
 workspace.addEventListener("keydown", (event) => {
   if (
     event.defaultPrevented ||
@@ -1000,7 +1002,7 @@ workspace.addEventListener("keydown", (event) => {
   if (!shortcut) return;
   event.preventDefault();
   document.documentElement.removeAttribute("data-pointer");
-  if (!event.repeat || event.key === "j" || event.key === "k") shortcut[1]();
+  if (!event.repeat || event.key === "j" || event.key === "k") shortcut();
 });
 fileList.addEventListener("keydown", (event) => {
   const position = matches.findIndex((item) => item.index === focusIndex);
