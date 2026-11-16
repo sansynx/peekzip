@@ -578,9 +578,9 @@
   display: none;
 }
 .scroll-control {
-  --cross: 24px;
-  --engine-width: 22px;
-  --engine-length: 44px;
+  --cross: 36px;
+  --engine-width: 32px;
+  --engine-length: 112px;
   --direction: to right;
   --along: to bottom;
   --engine: url("/locomotive.svg#upright");
@@ -621,8 +621,8 @@
   --direction: to bottom;
   --along: to right;
   --engine: url("/locomotive.svg#across");
-  --engine-width: 44px;
-  --engine-length: 22px;
+  --engine-width: 112px;
+  --engine-length: 32px;
   grid-column: 1;
   grid-row: 2;
   width: 100%;

@@ -763,3 +763,30 @@ dialog {
   margin-top: 12px;
   min-height: 44px;
 }
+
+/* Use the sample action's space for progress so opening an archive doesn't move the form. */
+.open-feedback:has(#open-cancel:not([hidden])) + #sample {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(root) {
+    animation-duration: 200ms;
+  }
+  ::view-transition-old(root) {
+    animation: archive-out 160ms ease-out both;
+  }
+  ::view-transition-new(root) {
+    animation: archive-in 200ms ease-out both;
+  }
+  @keyframes archive-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes archive-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+}

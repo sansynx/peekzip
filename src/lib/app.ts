@@ -683,7 +683,21 @@ async function open(
       return;
     }
     archive = result;
-    displayArchive();
+    const reveal = () => {
+      if (!signal.aborted) displayArchive();
+    };
+    const motion = matchMedia(
+      "(prefers-reduced-motion: no-preference)",
+    ).matches;
+    if (motion && document.startViewTransition) {
+      // Switch scroll position and keyboard focus between the two snapshots.
+      await document.startViewTransition(reveal).updateCallbackDone;
+    } else {
+      reveal();
+      if (motion && !signal.aborted)
+        workspace.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160 });
+    }
+    if (signal.aborted) return;
     let match: Entry | undefined;
     try {
       for (const part of ancestry) {

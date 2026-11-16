@@ -1,19 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 48">
-  <title>Steam locomotive viewed from above</title>
-  <view id="upright" viewBox="0 0 24 48"/>
-  <view id="across" viewBox="24 0 48 24"/>
-  <g id="engine" stroke="#292c26" stroke-linejoin="round">
-    <path fill="#666b61" d="m12 1 7 6H5z"/>
-    <path fill="#323730" d="M4 10h16v21H4z"/>
-    <rect x="7" y="6" width="10" height="25" rx="4" fill="#456356"/>
-    <path fill="none" stroke="#d2b66e" stroke-width="2" d="M8 14h8m-8 9h8"/>
-    <circle cx="12" cy="10" r="3.5" fill="#232723" stroke="#b8b9a6"/>
-    <circle cx="12" cy="18" r="2.5" fill="#d7b16b"/>
-    <rect x="2" y="28" width="20" height="16" rx="2" fill="#994e37"/>
-    <path fill="#b5cdbe" d="M5 30h14v4H5z"/>
-    <path fill="#743c2f" d="M5 36h14v5H5z"/>
-    <path fill="none" stroke="#cc8762" d="M6 37h12m-12 2h12"/>
-    <path fill="#55584d" d="M8 44h8v2H8z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 112">
+  <title>Red and ivory passenger locomotive with a coupled coach, seen from above</title>
+  <view id="upright" viewBox="0 0 32 112"/>
+  <view id="across" viewBox="32 0 112 32"/>
+  <defs>
+    <linearGradient id="roof"><stop stop-color="#9b9788"/><stop offset=".18" stop-color="#ede7d2"/><stop offset=".5" stop-color="#fff7dc"/><stop offset=".86" stop-color="#d6cfb7"/><stop offset="1" stop-color="#8c897c"/></linearGradient>
+    <linearGradient id="paint"><stop stop-color="#833528"/><stop offset=".24" stop-color="#c95739"/><stop offset=".56" stop-color="#e0744b"/><stop offset="1" stop-color="#983d2e"/></linearGradient>
+  </defs>
+  <g id="train" stroke-linejoin="round">
+    <!-- Wheels and coupling remain visible between the two bodies -->
+    <path fill="#292e2b" d="M2 18h28v8H2zm0 29h28v8H2zm12 9h4v12h-4zM3 71h26v7H3zm0 27h26v7H3z"/>
+    <!-- Streamlined locomotive nose and wraparound cab glass -->
+    <path d="M16 2C9 2 4 11 4 23v31q0 4 4 4h16q4 0 4-4V23C28 11 23 2 16 2Z" fill="url(#paint)" stroke="#373831" stroke-width="1.5"/>
+    <path d="M6 18q10-8 20 0l-2 7q-8-4-16 0z" fill="#25424b" stroke="#ede5c9" stroke-width="1.4"/>
+    <path d="M16 15v7" stroke="#f2e6c9" stroke-width="1.4"/>
+    <path d="M12 8q4-4 8 0" stroke="#ffe3a0" stroke-width="2.6" fill="none"/>
+    <path d="M8 29q8-5 16 0v23H8Z" fill="url(#roof)" stroke="#803c2e"/>
+    <circle cx="16" cy="36" r="5" fill="#637170" stroke="#424b47"/>
+    <path d="m13 33 6 6m0-6-6 6M11 45h10m-10 3h10" stroke="#5b635d" stroke-width="1.2"/>
+    <path d="M5 54h22" stroke="#e8cfa5" stroke-width="2"/>
+    <!-- The coach has a fluted silver roof and two rows of side windows -->
+    <rect x="4" y="64" width="24" height="45" rx="4" fill="#a54835" stroke="#393b34" stroke-width="1.5"/>
+    <rect x="8" y="66" width="16" height="41" rx="4" fill="url(#roof)"/>
+    <path d="M12 70v33m4-33v33m4-33v33" stroke="#bab59f" fill="none"/>
+    <path d="M6 70v32m20-32v32" stroke="#263e47" stroke-width="2" stroke-dasharray="4 1.5"/>
   </g>
-  <use href="#engine" transform="translate(72 0) rotate(90)"/>
+  <use href="#train" transform="translate(144 0) rotate(90)"/>
 </svg>
