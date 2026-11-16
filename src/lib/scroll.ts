@@ -10,13 +10,28 @@ for (const frame of document.querySelectorAll<HTMLElement>(".scroll-frame")) {
     horizontal.value = String(Math.round(viewport.scrollLeft));
   }
   function measure() {
-    for (const [control, max] of [
-      [vertical, viewport.scrollHeight - viewport.clientHeight],
-      [horizontal, viewport.scrollWidth - viewport.clientWidth],
-    ] as const) {
-      control.hidden = max <= 0 || !viewport.clientHeight;
-      control.max = String(Math.max(0, max));
+    const { scrollTop, scrollLeft } = viewport;
+    // Start at full size so the previous gutter can't wrap a line and keep itself visible.
+    frame.dataset.measuring = "xy";
+    const hasArea = viewport.clientWidth > 0 && viewport.clientHeight > 0;
+    let needsY = hasArea && viewport.scrollHeight > viewport.clientHeight;
+    let needsX = hasArea && viewport.scrollWidth > viewport.clientWidth;
+    // A necessary track can make the other axis overflow too.
+    if (needsY && !needsX) {
+      vertical.hidden = false;
+      frame.dataset.measuring = "x";
+      needsX = viewport.scrollWidth > viewport.clientWidth;
+    } else if (needsX && !needsY) {
+      horizontal.hidden = false;
+      frame.dataset.measuring = "y";
+      needsY = viewport.scrollHeight > viewport.clientHeight;
     }
+    vertical.hidden = !needsY;
+    horizontal.hidden = !needsX;
+    delete frame.dataset.measuring;
+    vertical.max = String(viewport.scrollHeight - viewport.clientHeight);
+    horizontal.max = String(viewport.scrollWidth - viewport.clientWidth);
+    viewport.scrollTo(scrollLeft, scrollTop);
     sync();
   }
   let pending = false;

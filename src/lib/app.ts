@@ -33,6 +33,7 @@ const cancelOpen = document.querySelector<HTMLButtonElement>("#open-cancel");
 const backToFiles = get<HTMLButtonElement>("ws-back-list");
 const filesView = get<HTMLButtonElement>("ws-files-view");
 const previewView = get<HTMLButtonElement>("ws-preview-view");
+const singlePanel = matchMedia("(max-width: 720px)");
 function setPanel(panel: "files" | "preview") {
   workspace.dataset.panel = panel;
   filesView.setAttribute("aria-pressed", String(panel === "files"));
@@ -44,7 +45,7 @@ previewView.addEventListener("click", () => setPanel("preview"));
 const PAGE_SIZE = 120;
 const more = get<HTMLButtonElement>("ws-more");
 const textExtensions = new Set(
-  "txt md markdown json jsonl log yaml yml ini toml xml html htm js jsx ts tsx css scss py rb sh go rs sql c cpp h hpp java swift kt conf cfg env properties gradle vue astro csv tsv".split(
+  "txt md markdown json jsonl log yaml yml ini toml xml html htm js mjs cjs jsx ts tsx css scss py rb sh go rs sql c cpp h hpp java swift kt conf cfg env properties gradle vue astro csv tsv".split(
     " ",
   ),
 );
@@ -444,18 +445,21 @@ async function pick(item: Entry, reveal = false) {
   fileList
     .querySelector('[aria-current="true"]')
     ?.setAttribute("aria-current", "false");
-  fileList
-    .querySelector(`[data-index="${item.index}"]`)
-    ?.setAttribute("aria-current", "true");
+  const row = fileList.querySelector<HTMLButtonElement>(
+    `[data-index="${item.index}"]`,
+  );
+  row?.setAttribute("aria-current", "true");
   get("ws-filename").textContent = basename(item.name);
   if (reveal) {
-    const heading = get("ws-filename");
-    heading.focus({ preventScroll: true });
-    if (
-      matchMedia("(max-width: 720px)").matches &&
-      heading.getBoundingClientRect().top < 64
-    )
-      get("ws-preview-panel").scrollIntoView({ block: "start" });
+    if (singlePanel.matches) {
+      previewView.focus({ preventScroll: true });
+      if (get("ws-filename").getBoundingClientRect().top < 64)
+        get("ws-preview-panel").scrollIntoView({ block: "start" });
+    } else if (row) {
+      row.focus({ preventScroll: true });
+    } else {
+      focusFile(matches.findIndex((entry) => entry.index === item.index));
+    }
   }
 
   get("ws-filemeta").textContent = [
@@ -683,7 +687,21 @@ async function open(
       return;
     }
     archive = result;
-    displayArchive();
+    const reveal = () => {
+      if (!signal.aborted) displayArchive();
+    };
+    const motion = matchMedia(
+      "(prefers-reduced-motion: no-preference)",
+    ).matches;
+    if (motion && document.startViewTransition) {
+      // Switch scroll position and keyboard focus between the two snapshots.
+      await document.startViewTransition(reveal).updateCallbackDone;
+    } else {
+      reveal();
+      if (motion && !signal.aborted)
+        workspace.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160 });
+    }
+    if (signal.aborted) return;
     let match: Entry | undefined;
     try {
       for (const part of ancestry) {
@@ -891,18 +909,125 @@ fileList.addEventListener("focusin", (event) => {
     button.tabIndex = 0;
   }
 });
-fileList.addEventListener("keydown", (event) => {
-  const position = matches.findIndex((item) => item.index === focusIndex);
-  if (event.altKey || event.ctrlKey || event.metaKey) return;
-  const destination = {
-    ArrowUp: position - 1,
-    ArrowDown: position + 1,
-    Home: 0,
-    End: matches.length - 1,
-  }[event.key];
-  if (destination === undefined) return;
+const keysDialog = get<HTMLDialogElement>("keys-dialog");
+function showKeys() {
+  keysDialog.showModal();
+}
+get("ws-shortcuts").addEventListener("click", showKeys);
+keysDialog
+  .querySelector(".dismiss")!
+  .addEventListener("click", () => keysDialog.close());
+
+function previewNeighbor(direction: number) {
+  const current = document.activeElement?.closest<HTMLButtonElement>(".pz-row");
+  const index = current ? Number(current.dataset.index) : selected?.index;
+  const position = matches.findIndex((item) => item.index === index);
+  const next = position < 0 ? 0 : position + direction;
+  if (next < 0 || next >= matches.length) return;
+  focusFile(next);
+  void pick(matches[next], true);
+}
+function changePage(button: HTMLButtonElement) {
+  if (button.disabled) return;
+  setPanel("files");
+  button.click();
+}
+const shortcuts = new Map<string, () => void>();
+function registerShortcuts(
+  listId: string,
+  commands: [string, string, () => void][],
+) {
+  const list = get(listId);
+  for (const [key, label, run] of commands) {
+    shortcuts.set(key, run);
+    const term = element("dt", "", label);
+    const definition = document.createElement("dd");
+    definition.append(element("kbd", "", key));
+    list.append(term, definition);
+  }
+}
+registerShortcuts("keys-index", [
+  [
+    "/",
+    "Find a file",
+    () => {
+      setPanel("files");
+      search.focus();
+      search.select();
+    },
+  ],
+  ["i", "Go to the file index", refocusList],
+  ["[", "Previous results page", () => changePage(previous)],
+  ["]", "Next results page", () => changePage(more)],
+]);
+registerShortcuts("keys-preview", [
+  ["j", "Preview next file", () => previewNeighbor(1)],
+  ["k", "Preview previous file", () => previewNeighbor(-1)],
+  [
+    "v",
+    "Go to the preview",
+    () => {
+      if (selected) {
+        setPanel("preview");
+        stage.focus();
+      }
+    },
+  ],
+  [
+    "s",
+    "Share this file",
+    () => {
+      if (selected) share.click();
+    },
+  ],
+]);
+registerShortcuts("keys-archive", [
+  [
+    "u",
+    "Go to the parent ZIP",
+    () => {
+      if (!parentButton.hidden) parentButton.click();
+    },
+  ],
+  ["?", "Open this guide", showKeys],
+]);
+workspace.addEventListener("keydown", (event) => {
+  if (
+    event.defaultPrevented ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.metaKey ||
+    !(event.target instanceof HTMLElement) ||
+    event.target.closest("input, textarea, select, [contenteditable]")
+  )
+    return;
+  const inList = fileList.contains(event.target);
+  const inMobilePreview =
+    event.target === previewView && workspace.dataset.panel === "preview";
+  if (!event.shiftKey && (inList || inMobilePreview)) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      if (inList && singlePanel.matches) {
+        const position = matches.findIndex((item) => item.index === focusIndex);
+        focusFile(position + direction);
+      } else {
+        previewNeighbor(direction);
+      }
+      return;
+    }
+    if (inList && (event.key === "Home" || event.key === "End")) {
+      event.preventDefault();
+      focusFile(event.key === "Home" ? 0 : matches.length - 1);
+      return;
+    }
+  }
+  const shortcut = shortcuts.get(event.key);
+  if (!shortcut) return;
   event.preventDefault();
-  focusFile(destination);
+  document.documentElement.removeAttribute("data-pointer");
+  if (!event.repeat || event.key === "j" || event.key === "k") shortcut();
 });
 search.addEventListener("keydown", (event) => {
   if (event.key === "ArrowDown" && matches.length) {

@@ -5,30 +5,44 @@ import "../workspace.css";
 <section id="workspace" aria-label="Archive explorer" hidden>
   <div class="pz-workhead">
     <div class="pz-titleblock">
+      <button class="pz-return" id="ws-parent" type="button" hidden>
+        <svg aria-hidden="true">
+          <use href="/icons.svg#arrow-left" />
+        </svg>{" "}
+        Up one level
+      </button>
+      <div class="pz-archive-name">
+        <div
+          id="ws-breadcrumb"
+          class="pz-crumb"
+          aria-label="Archive path"
+          hidden
+        ></div>
+        <h1 id="ws-title" tabindex="-1">
+          Archive
+        </h1>
+        <p class="pz-info" id="ws-meta"></p>
+      </div>
       <nav class="pz-archive-nav" aria-label="Archive navigation">
-        <button class="pz-return" id="ws-parent" type="button" hidden>
-          <svg aria-hidden="true">
-            <use href="/icons.svg#arrow-left" />
-          </svg>{" "}
-          Up one level
-        </button>
         <button class="pz-return" id="ws-close" type="button">
           <svg aria-hidden="true">
             <use href="/icons.svg#folder-open" />
           </svg>{" "}
           Open another archive
         </button>
+        <button
+          class="pz-return"
+          id="ws-shortcuts"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="keys-dialog"
+        >
+          <svg aria-hidden="true">
+            <use href="/icons.svg#keyboard" />
+          </svg>
+          Keyboard shortcuts
+        </button>
       </nav>
-      <div
-        id="ws-breadcrumb"
-        class="pz-crumb"
-        aria-label="Archive path"
-        hidden
-      ></div>
-      <h1 id="ws-title" tabindex="-1">
-        Archive
-      </h1>
-      <p class="pz-info" id="ws-meta"></p>
     </div>
   </div>
   <nav class="pz-switch" aria-label="Archive views">
@@ -74,8 +88,8 @@ import "../workspace.css";
         />
       </label>
       <p id="ws-keys" class="pz-sr">
-        Use the up and down arrows to move through files, then Enter to open a
-        preview.
+        Use the up and down arrows to browse files. Press Enter to open the
+        selected file.
       </p>
       <div class="scroll-frame">
         <div
@@ -127,10 +141,13 @@ import "../workspace.css";
               class="pz-return-list"
               hidden
             >
-              Back to files
+              <svg aria-hidden="true">
+                <use href="/icons.svg#arrow-left" />
+              </svg>
+              Locate in file index
             </button>
           </div>
-          <h2 id="ws-filename" tabindex="-1">
+          <h2 id="ws-filename" aria-live="polite" aria-atomic="true">
             Choose a file
           </h2>
           <p id="ws-filemeta" class="pz-info"></p>
@@ -194,6 +211,40 @@ import "../workspace.css";
     </section>
   </div>
 </section>
+<dialog id="keys-dialog" aria-labelledby="keys-title">
+  <div class="dialog-head">
+    <h2 id="keys-title">
+      <svg aria-hidden="true">
+        <use href="/icons.svg#keyboard" />
+      </svg>{" "}
+      Keyboard shortcuts
+    </h2>
+    <button class="dismiss" type="button" aria-label="Close dialog">
+      <svg aria-hidden="true">
+        <use href="/icons.svg#x" />
+      </svg>
+    </button>
+  </div>
+  <div id="keys-list">
+    <section>
+      <h3>File index</h3>
+      <dl id="keys-index"></dl>
+    </section>
+    <section>
+      <h3>File preview</h3>
+      <dl id="keys-preview"></dl>
+    </section>
+    <section>
+      <h3>Archive controls</h3>
+      <dl id="keys-archive"></dl>
+    </section>
+  </div>
+  <p class="keys-tip">
+    From search, press <kbd>↓</kbd> to reach the results, then <kbd>Enter</kbd>{" "}
+    to preview a file. Use <kbd>↑</kbd> and <kbd>↓</kbd> to browse adjacent
+    previews
+  </p>
+</dialog>
 <dialog id="share-dialog" aria-labelledby="share-title">
   <div class="dialog-head">
     <h2 id="share-title">Share this file</h2>
