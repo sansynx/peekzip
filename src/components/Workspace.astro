@@ -88,8 +88,8 @@ import "../workspace.css";
         />
       </label>
       <p id="ws-keys" class="pz-sr">
-        Use the up and down arrows to move through files, then Enter to open a
-        preview.
+        Use the up and down arrows to browse files. Press Enter to open the
+        selected file.
       </p>
       <div class="scroll-frame">
         <div
@@ -147,7 +147,7 @@ import "../workspace.css";
               Locate in file index
             </button>
           </div>
-          <h2 id="ws-filename" tabindex="-1">
+          <h2 id="ws-filename" aria-live="polite" aria-atomic="true">
             Choose a file
           </h2>
           <p id="ws-filemeta" class="pz-info"></p>
@@ -241,7 +241,8 @@ import "../workspace.css";
   </div>
   <p class="keys-tip">
     From search, press <kbd>↓</kbd> to reach the results, then <kbd>Enter</kbd>{" "}
-    to preview a file
+    to preview a file. Use <kbd>↑</kbd> and <kbd>↓</kbd> to browse adjacent
+    previews
   </p>
 </dialog>
 <dialog id="share-dialog" aria-labelledby="share-title">

@@ -673,7 +673,7 @@
   width: var(--engine-width);
   height: var(--engine-length);
   border: 0;
-  background: var(--engine) center/contain no-repeat;
+  background: var(--engine) center / 100% 100% no-repeat;
   transform: rotate(var(--heading, 0deg));
 }
 .scroll-control::-moz-range-thumb {
@@ -681,7 +681,7 @@
   height: var(--engine-length);
   border: 0;
   border-radius: 0;
-  background: var(--engine) center/contain no-repeat;
+  background: var(--engine) center / 100% 100% no-repeat;
   transform: rotate(var(--heading, 0deg));
 }
 @media (pointer: coarse) {

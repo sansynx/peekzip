@@ -33,6 +33,7 @@ const cancelOpen = document.querySelector<HTMLButtonElement>("#open-cancel");
 const backToFiles = get<HTMLButtonElement>("ws-back-list");
 const filesView = get<HTMLButtonElement>("ws-files-view");
 const previewView = get<HTMLButtonElement>("ws-preview-view");
+const singlePanel = matchMedia("(max-width: 720px)");
 function setPanel(panel: "files" | "preview") {
   workspace.dataset.panel = panel;
   filesView.setAttribute("aria-pressed", String(panel === "files"));
@@ -44,7 +45,7 @@ previewView.addEventListener("click", () => setPanel("preview"));
 const PAGE_SIZE = 120;
 const more = get<HTMLButtonElement>("ws-more");
 const textExtensions = new Set(
-  "txt md markdown json jsonl log yaml yml ini toml xml html htm js jsx ts tsx css scss py rb sh go rs sql c cpp h hpp java swift kt conf cfg env properties gradle vue astro csv tsv".split(
+  "txt md markdown json jsonl log yaml yml ini toml xml html htm js mjs cjs jsx ts tsx css scss py rb sh go rs sql c cpp h hpp java swift kt conf cfg env properties gradle vue astro csv tsv".split(
     " ",
   ),
 );
@@ -444,18 +445,21 @@ async function pick(item: Entry, reveal = false) {
   fileList
     .querySelector('[aria-current="true"]')
     ?.setAttribute("aria-current", "false");
-  fileList
-    .querySelector(`[data-index="${item.index}"]`)
-    ?.setAttribute("aria-current", "true");
+  const row = fileList.querySelector<HTMLButtonElement>(
+    `[data-index="${item.index}"]`,
+  );
+  row?.setAttribute("aria-current", "true");
   get("ws-filename").textContent = basename(item.name);
   if (reveal) {
-    const heading = get("ws-filename");
-    heading.focus({ preventScroll: true });
-    if (
-      matchMedia("(max-width: 720px)").matches &&
-      heading.getBoundingClientRect().top < 64
-    )
-      get("ws-preview-panel").scrollIntoView({ block: "start" });
+    if (singlePanel.matches) {
+      previewView.focus({ preventScroll: true });
+      if (get("ws-filename").getBoundingClientRect().top < 64)
+        get("ws-preview-panel").scrollIntoView({ block: "start" });
+    } else if (row) {
+      row.focus({ preventScroll: true });
+    } else {
+      focusFile(matches.findIndex((entry) => entry.index === item.index));
+    }
   }
 
   get("ws-filemeta").textContent = [
@@ -998,24 +1002,32 @@ workspace.addEventListener("keydown", (event) => {
     event.target.closest("input, textarea, select, [contenteditable]")
   )
     return;
+  const inList = fileList.contains(event.target);
+  const inMobilePreview =
+    event.target === previewView && workspace.dataset.panel === "preview";
+  if (!event.shiftKey && (inList || inMobilePreview)) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      if (inList && singlePanel.matches) {
+        const position = matches.findIndex((item) => item.index === focusIndex);
+        focusFile(position + direction);
+      } else {
+        previewNeighbor(direction);
+      }
+      return;
+    }
+    if (inList && (event.key === "Home" || event.key === "End")) {
+      event.preventDefault();
+      focusFile(event.key === "Home" ? 0 : matches.length - 1);
+      return;
+    }
+  }
   const shortcut = shortcuts.get(event.key);
   if (!shortcut) return;
   event.preventDefault();
   document.documentElement.removeAttribute("data-pointer");
   if (!event.repeat || event.key === "j" || event.key === "k") shortcut();
-});
-fileList.addEventListener("keydown", (event) => {
-  const position = matches.findIndex((item) => item.index === focusIndex);
-  if (event.altKey || event.ctrlKey || event.metaKey) return;
-  const destination = {
-    ArrowUp: position - 1,
-    ArrowDown: position + 1,
-    Home: 0,
-    End: matches.length - 1,
-  }[event.key];
-  if (destination === undefined) return;
-  event.preventDefault();
-  focusFile(destination);
 });
 search.addEventListener("keydown", (event) => {
   if (event.key === "ArrowDown" && matches.length) {
