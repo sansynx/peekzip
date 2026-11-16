@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 36">
+  <title>Zipper slider and teeth</title>
+  <view id="index" viewBox="0 0 20 36"/>
+  <view id="preview" viewBox="24 0 20 36"/>
+  <view id="index-horizontal" viewBox="48 0 36 20"/>
+  <view id="preview-horizontal" viewBox="48 24 36 20"/>
+  <view id="teeth" viewBox="90 0 8 6"/>
+  <view id="teeth-horizontal" viewBox="90 12 6 8"/>
+  <defs>
+    <linearGradient id="metal">
+      <stop stop-color="#777d7d"/><stop offset=".28" stop-color="#f7f4e7"/>
+      <stop offset=".56" stop-color="#d7d8ce"/><stop offset="1" stop-color="#919794"/>
+    </linearGradient>
+    <g id="pull" stroke="#394043" stroke-width="1.2" stroke-linejoin="round">
+      <path d="M4 1h12q2 0 2 3v4l-4 8H6L2 8V4q0-3 2-3Z" fill="url(#metal)"/>
+      <path fill="currentColor" fill-rule="evenodd" d="M8 7h4l4.6 23.7q.7 3.8-3.2 3.8H6.6q-3.9 0-3.2-3.8ZM8 23l-1.2 7h6.4L12 23Z"/>
+      <path d="M8 14 5.8 29" stroke="#fff" stroke-opacity=".55"/>
+      <rect x="7.4" y="3.5" width="5.2" height="7.6" rx="2.3" fill="url(#metal)"/>
+    </g>
+    <path id="tooth-pair" fill="#93968c" d="M0 0h4v1h1v2H2V2H0zm8 3H4v1H3v2h3V5h2z"/>
+  </defs>
+  <g color="#425d90">
+    <use href="#pull"/>
+    <use href="#pull" transform="translate(84 0) rotate(90)"/>
+  </g>
+  <g color="#a14c43">
+    <use href="#pull" x="24"/>
+    <use href="#pull" transform="translate(84 24) rotate(90)"/>
+  </g>
+  <use href="#tooth-pair" x="90"/>
+  <use href="#tooth-pair" transform="translate(96 12) rotate(90)"/>
+</svg>

@@ -606,47 +606,29 @@
   position: absolute;
 }
 .pz-index {
-  --vertical-engine: url("/locomotive.svg#blue-down");
-  --horizontal-engine: url("/locomotive.svg#blue-right");
+  --pull-y: url("/zipper.svg#index");
+  --pull-x: url("/zipper.svg#index-horizontal");
 }
 .pz-preview {
-  --vertical-engine: url("/locomotive.svg#red-down");
-  --horizontal-engine: url("/locomotive.svg#red-right");
+  --pull-y: url("/zipper.svg#preview");
+  --pull-x: url("/zipper.svg#preview-horizontal");
 }
 .scroll-control {
   --cross: 26px;
-  --engine-width: 20px;
-  --engine-length: 46px;
-  --direction: to right;
-  --along: to bottom;
-  --engine: var(--vertical-engine);
-  --rail: #9c9e91;
   appearance: none;
   margin: 0;
   padding: 0;
   border: 0;
   user-select: none;
-  background:
-    linear-gradient(
-      var(--direction),
-      transparent calc(50% - 3px),
-      var(--rail) calc(50% - 3px) calc(50% - 2px),
-      transparent calc(50% - 2px) calc(50% + 2px),
-      var(--rail) calc(50% + 2px) calc(50% + 3px),
-      transparent calc(50% + 3px)
-    ),
-    repeating-linear-gradient(var(--along), transparent 0 5px, #b3b1a2 5px 7px)
-      center / var(--ties) no-repeat;
   cursor: grab;
-}
-.scroll-control[data-reverse] {
-  --heading: 180deg;
 }
 .scroll-control:active {
   cursor: grabbing;
 }
 .scroll-y {
-  --ties: 10px 100%;
+  --pull: var(--pull-y);
+  --thumb-width: 20px;
+  --thumb-height: 36px;
   writing-mode: vertical-lr;
   direction: ltr;
   grid-column: 2;
@@ -654,35 +636,32 @@
   width: var(--cross);
   height: 100%;
   min-height: 0;
+  background: url("/zipper.svg#teeth") center / 8px 6px repeat-y;
 }
 .scroll-x {
-  --ties: 100% 10px;
-  --direction: to bottom;
-  --along: to right;
-  --engine: var(--horizontal-engine);
-  --engine-width: 46px;
-  --engine-length: 20px;
+  --pull: var(--pull-x);
+  --thumb-width: 36px;
+  --thumb-height: 20px;
   grid-column: 1;
   grid-row: 2;
   width: 100%;
   height: var(--cross);
   min-width: 0;
+  background: url("/zipper.svg#teeth-horizontal") center / 6px 8px repeat-x;
 }
 .scroll-control::-webkit-slider-thumb {
   appearance: none;
-  width: var(--engine-width);
-  height: var(--engine-length);
+  width: var(--thumb-width);
+  height: var(--thumb-height);
   border: 0;
-  background: var(--engine) center / 100% 100% no-repeat;
-  transform: rotate(var(--heading, 0deg));
+  background: var(--pull) center / 100% 100% no-repeat;
 }
 .scroll-control::-moz-range-thumb {
-  width: var(--engine-width);
-  height: var(--engine-length);
+  width: var(--thumb-width);
+  height: var(--thumb-height);
   border: 0;
   border-radius: 0;
-  background: var(--engine) center / 100% 100% no-repeat;
-  transform: rotate(var(--heading, 0deg));
+  background: var(--pull) center / 100% 100% no-repeat;
 }
 @media (pointer: coarse) {
   .scroll-control {

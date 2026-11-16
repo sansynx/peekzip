@@ -5,19 +5,9 @@ for (const frame of document.querySelectorAll<HTMLElement>(".scroll-frame")) {
   const horizontal = frame.querySelector<HTMLInputElement>(".scroll-x")!;
   frame.classList.add("enhanced");
 
-  let previousTop = 0;
-  let previousLeft = 0;
   function sync() {
-    const top = Math.round(viewport.scrollTop);
-    const left = Math.round(viewport.scrollLeft);
-    if (top !== previousTop)
-      vertical.toggleAttribute("data-reverse", top < previousTop);
-    if (left !== previousLeft)
-      horizontal.toggleAttribute("data-reverse", left < previousLeft);
-    previousTop = top;
-    previousLeft = left;
-    vertical.value = String(top);
-    horizontal.value = String(left);
+    vertical.value = String(Math.round(viewport.scrollTop));
+    horizontal.value = String(Math.round(viewport.scrollLeft));
   }
   function measure() {
     const { scrollTop, scrollLeft } = viewport;
