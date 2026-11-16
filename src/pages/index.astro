@@ -162,6 +162,37 @@ import "../style.css";
       <div class="dialog-copy"></div>
     </dialog>
     <script>
+      const root = document.documentElement;
+      const usePointer = () => {
+        if (!root.hasAttribute("data-pointer"))
+          root.setAttribute("data-pointer", "");
+      };
+      document.addEventListener("pointerdown", usePointer, {
+        capture: true,
+        passive: true,
+      });
+      document.addEventListener("wheel", usePointer, { passive: true });
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          if (
+            [
+              "Tab",
+              "ArrowDown",
+              "ArrowUp",
+              "ArrowLeft",
+              "ArrowRight",
+              "Home",
+              "End",
+              "PageUp",
+              "PageDown",
+              "Escape",
+            ].includes(event.key)
+          )
+            root.removeAttribute("data-pointer");
+        },
+        true,
+      );
       const zone = document.querySelector<HTMLLabelElement>("#dropzone")!;
       zone.addEventListener("dragover", (event) => {
         if (event.dataTransfer?.types.includes("Files")) {

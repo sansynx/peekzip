@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 48">
+  <title>Steam locomotive viewed from above</title>
+  <view id="upright" viewBox="0 0 24 48"/>
+  <view id="across" viewBox="24 0 48 24"/>
+  <g id="engine" stroke="#292c26" stroke-linejoin="round">
+    <path fill="#666b61" d="m12 1 7 6H5z"/>
+    <path fill="#323730" d="M4 10h16v21H4z"/>
+    <rect x="7" y="6" width="10" height="25" rx="4" fill="#456356"/>
+    <path fill="none" stroke="#d2b66e" stroke-width="2" d="M8 14h8m-8 9h8"/>
+    <circle cx="12" cy="10" r="3.5" fill="#232723" stroke="#b8b9a6"/>
+    <circle cx="12" cy="18" r="2.5" fill="#d7b16b"/>
+    <rect x="2" y="28" width="20" height="16" rx="2" fill="#994e37"/>
+    <path fill="#b5cdbe" d="M5 30h14v4H5z"/>
+    <path fill="#743c2f" d="M5 36h14v5H5z"/>
+    <path fill="none" stroke="#cc8762" d="M6 37h12m-12 2h12"/>
+    <path fill="#55584d" d="M8 44h8v2H8z"/>
+  </g>
+  <use href="#engine" transform="translate(72 0) rotate(90)"/>
+</svg>

@@ -40,7 +40,7 @@
   background: #dedbcf;
 }
 :where(a, button, input, label) {
-  -webkit-tap-highlight-color: rgb(67 62 47 / 12%);
+  -webkit-tap-highlight-color: transparent;
 }
 * {
   box-sizing: border-box;
@@ -58,6 +58,9 @@ main,
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+html[data-pointer] :focus {
+  outline: none !important;
 }
 button,
 input {
@@ -281,13 +284,12 @@ p {
   cursor: pointer;
   font-size: 14px;
 }
-.dropzone:hover,
 .dropzone.dragging {
   background: var(--accent-soft);
   border-color: var(--accent);
 }
 .dropzone.dragging,
-.dropzone:has(input:focus-visible) {
+:root:not([data-pointer]) .dropzone:has(input:focus-visible) {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
@@ -311,7 +313,7 @@ p {
   padding: 5px;
   gap: 8px;
 }
-.input-row:focus-within {
+:root:not([data-pointer]) .input-row:focus-within {
   border-color: var(--focus);
 }
 .input-row > svg {
@@ -628,7 +630,6 @@ dialog p {
     background: var(--accent);
     border-color: var(--accent);
   }
-  .dropzone:hover,
   .dropzone.dragging {
     background: var(--accent-hover);
   }
