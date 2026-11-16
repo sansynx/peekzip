@@ -595,9 +595,16 @@ dialog p {
       transform: translateY(4px);
     }
   }
-  dialog[open],
-  .pz-stage > :is(img, pre, table) {
+  dialog[open] {
     animation: panel-in 150ms ease-out;
+  }
+  @keyframes preview-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .pz-stage > :is(img, pre, table) {
+    animation: preview-in 150ms ease-out;
   }
   button,
   .dropzone {
@@ -788,5 +795,45 @@ dialog {
       opacity: 0;
       transform: translateY(4px);
     }
+  }
+}
+
+@media (min-width: 701px) and (max-height: 850px) {
+  .hero {
+    min-height: clamp(185px, calc(100svh - 422px), 350px);
+    margin-top: 16px;
+  }
+  .intro {
+    padding-block: 22px;
+  }
+  .intro h1 {
+    font-size: clamp(46px, 8vh, 76px);
+  }
+  .opener {
+    padding-block: 16px;
+    margin-top: 16px;
+  }
+  .note {
+    padding-block: 16px;
+  }
+}
+@media (min-width: 701px) and (min-height: 851px) {
+  #landing {
+    padding-top: 25px;
+  }
+  .hero {
+    margin-top: auto;
+  }
+}
+@media (max-width: 700px) and (max-height: 700px) {
+  .intro,
+  .opener {
+    padding-block: 12px;
+  }
+  #sample {
+    margin-top: 6px;
+  }
+  .note {
+    padding-block: 8px max(8px, env(safe-area-inset-bottom));
   }
 }

@@ -905,6 +905,103 @@ fileList.addEventListener("focusin", (event) => {
     button.tabIndex = 0;
   }
 });
+const keysDialog = get<HTMLDialogElement>("keys-dialog");
+function showKeys() {
+  keysDialog.showModal();
+}
+get("ws-shortcuts").addEventListener("click", showKeys);
+keysDialog
+  .querySelector(".dismiss")!
+  .addEventListener("click", () => keysDialog.close());
+
+function previewNeighbor(direction: number) {
+  const current = document.activeElement?.closest<HTMLButtonElement>(".pz-row");
+  const index = current ? Number(current.dataset.index) : selected?.index;
+  const position = matches.findIndex((item) => item.index === index);
+  const next = position < 0 ? 0 : position + direction;
+  if (next < 0 || next >= matches.length) return;
+  focusFile(next);
+  void pick(matches[next], true);
+}
+function changePage(button: HTMLButtonElement) {
+  if (button.disabled) return;
+  setPanel("files");
+  button.click();
+}
+const shortcuts = new Map<string, [string, () => void]>([
+  [
+    "/",
+    [
+      "Find a file",
+      () => {
+        setPanel("files");
+        search.focus();
+        search.select();
+      },
+    ],
+  ],
+  ["j", ["Preview next file", () => previewNeighbor(1)]],
+  ["k", ["Preview previous file", () => previewNeighbor(-1)]],
+  ["[", ["Previous file list page", () => changePage(previous)]],
+  ["]", ["Next file list page", () => changePage(more)]],
+  ["i", ["Return to file index", refocusList]],
+  [
+    "v",
+    [
+      "Focus selected preview",
+      () => {
+        if (selected) {
+          setPanel("preview");
+          stage.focus();
+        }
+      },
+    ],
+  ],
+  [
+    "u",
+    [
+      "Go up one ZIP level",
+      () => {
+        if (!parentButton.hidden) parentButton.click();
+      },
+    ],
+  ],
+  [
+    "s",
+    [
+      "Share selected file",
+      () => {
+        if (selected) share.click();
+      },
+    ],
+  ],
+  ["?", ["Show keyboard shortcuts", showKeys]],
+]);
+const keysList = get("keys-list");
+for (const [key, [description]] of shortcuts) {
+  const term = document.createElement("dt");
+  term.textContent = description;
+  const definition = document.createElement("dd");
+  definition.append(element("kbd", "", key));
+  keysList.append(term, definition);
+}
+workspace.addEventListener("keydown", (event) => {
+  if (
+    event.defaultPrevented ||
+    event.isComposing ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.metaKey ||
+    !(event.target instanceof HTMLElement) ||
+    event.target.closest("input, textarea, select, [contenteditable]")
+  )
+    return;
+  const shortcut = shortcuts.get(event.key);
+  if (!shortcut) return;
+  event.preventDefault();
+  document.documentElement.removeAttribute("data-pointer");
+  if (!event.repeat || event.key === "j" || event.key === "k") shortcut[1]();
+});
 fileList.addEventListener("keydown", (event) => {
   const position = matches.findIndex((item) => item.index === focusIndex);
   if (event.altKey || event.ctrlKey || event.metaKey) return;

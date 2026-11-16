@@ -11,7 +11,8 @@ Open a ZIP, see what’s inside, and download the file you came for. Choose a ZI
 - Search filenames and paths, preview text, images, or CSV tables, and save individual entries
 - Open a ZIP inside another ZIP and return to the parent archive
 - Share a link to a specific entry, even inside a nested ZIP. Hosted archives open directly. Local archives open when the recipient chooses their copy
-- On phones, switch between **Files** and **Preview** without losing your search. With a keyboard, use the arrow keys, Home, or End in the index, Enter to preview, and Escape to return or cancel a read
+- On phones, switch between **Files** and **Preview** without losing your search
+- In the viewer, press `/` to find a file, `↓` to move from search into the results, and `j` or `k` to preview the next or previous match. Press `?` or choose **Keyboard shortcuts** for all ten commands. Arrow keys, Home and End move through the index, Enter opens a preview, and Escape returns to the list or cancels a read
 
 ## What leaves your device
 

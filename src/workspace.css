@@ -527,9 +527,6 @@
   .pz-file-list {
     max-height: min(62svh, 640px);
   }
-  .pz-preview-head {
-    flex-direction: column;
-  }
   .pz-stage {
     min-height: 30svh;
   }
@@ -676,9 +673,111 @@
   height: 16px;
   fill: currentColor;
 }
+
+#keys-list {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin: 0;
+}
+#keys-list dt,
+#keys-list dd {
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+}
+#keys-list dt {
+  align-self: stretch;
+  align-content: center;
+}
+#keys-list kbd {
+  display: inline-block;
+  min-width: 26px;
+  padding: 2px 6px;
+  font: 14px var(--mono);
+  text-align: center;
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  background: var(--paper);
+}
+@media (min-height: 600px) {
+  body:has(#workspace:not([hidden])) {
+    height: 100dvh;
+  }
+  main:has(#workspace:not([hidden])) {
+    min-height: 0;
+  }
+  #workspace {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0 20px;
+  }
+  .pz-workhead {
+    margin-bottom: 12px;
+  }
+  #workspace h1 {
+    font-size: clamp(30px, 3.3vw, 48px);
+    margin: 2px 0 4px;
+  }
+  .pz-workgrid {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: auto;
+  }
+  .pz-index,
+  .pz-preview {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .pz-index > .scroll-frame,
+  .pz-preview > .scroll-frame {
+    min-height: 7rem;
+    flex: 1;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .pz-file-list,
+  .pz-stage {
+    max-height: none;
+    min-height: 0;
+  }
+  .pz-stage:has(> img) {
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  }
+  .pz-stage > img {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: contain;
+  }
+  .pz-preview:has(#ws-enter:not([hidden])) > .scroll-frame {
+    flex: 0 1 auto;
+  }
+}
 @media (max-width: 720px) {
   #workspace .pz-preview-head {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
+    gap: 4px 8px;
+    margin-bottom: 12px;
+  }
+  .pz-preview-head > div {
+    display: contents;
+  }
+  .pz-preview-head .pz-panel-label,
+  .pz-preview-head #ws-share {
+    grid-row: 1;
+  }
+  .pz-preview-head #ws-share {
+    grid-column: 2;
+  }
+  .pz-preview-head h2,
+  .pz-preview-head .pz-info {
+    grid-column: 1 / -1;
+    margin: 0;
   }
 }

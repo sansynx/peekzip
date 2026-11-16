@@ -12,6 +12,14 @@ import "../workspace.css";
           </svg>{" "}
           Up one level
         </button>
+        <button
+          class="pz-return"
+          id="ws-shortcuts"
+          type="button"
+          aria-haspopup="dialog"
+        >
+          Keyboard shortcuts
+        </button>
         <button class="pz-return" id="ws-close" type="button">
           <svg aria-hidden="true">
             <use href="/icons.svg#folder-open" />
@@ -194,6 +202,21 @@ import "../workspace.css";
     </section>
   </div>
 </section>
+<dialog id="keys-dialog" aria-labelledby="keys-title">
+  <div class="dialog-head">
+    <h2 id="keys-title">Keyboard shortcuts</h2>
+    <button class="dismiss" type="button" aria-label="Close dialog">
+      <svg aria-hidden="true">
+        <use href="/icons.svg#x" />
+      </svg>
+    </button>
+  </div>
+  <dl id="keys-list"></dl>
+  <p>
+    Use these keys in the archive viewer. When typing in search, press ↓ to move
+    into the file list.
+  </p>
+</dialog>
 <dialog id="share-dialog" aria-labelledby="share-title">
   <div class="dialog-head">
     <h2 id="share-title">Share this file</h2>
