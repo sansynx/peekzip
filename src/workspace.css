@@ -422,7 +422,13 @@
   flex-wrap: wrap;
 }
 .pz-titleblock {
+  text-align: center;
   width: 100%;
+}
+#workspace #ws-title {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 .pz-archive-nav {
   display: flex;
@@ -574,14 +580,26 @@
 .scroll-frame.enhanced > :first-child::-webkit-scrollbar {
   display: none;
 }
+.scroll-frame[data-measuring*="x"] > .scroll-x,
+.scroll-frame[data-measuring*="y"] > .scroll-y {
+  position: absolute;
+}
+.pz-index {
+  --vertical-engine: url("/locomotive.svg#blue-down");
+  --horizontal-engine: url("/locomotive.svg#blue-right");
+}
+.pz-preview {
+  --vertical-engine: url("/locomotive.svg#red-down");
+  --horizontal-engine: url("/locomotive.svg#red-right");
+}
 .scroll-control {
-  --cross: 36px;
-  --engine-width: 32px;
-  --engine-length: 112px;
+  --cross: 26px;
+  --engine-width: 20px;
+  --engine-length: 46px;
   --direction: to right;
   --along: to bottom;
-  --engine: url("/locomotive.svg#upright");
-  --rail: #77796a;
+  --engine: var(--vertical-engine);
+  --rail: #9c9e91;
   appearance: none;
   margin: 0;
   padding: 0;
@@ -590,21 +608,24 @@
   background:
     linear-gradient(
       var(--direction),
-      transparent calc(50% - 5px),
-      var(--rail) calc(50% - 5px) calc(50% - 3px),
-      transparent calc(50% - 3px) calc(50% + 3px),
-      var(--rail) calc(50% + 3px) calc(50% + 5px),
-      transparent calc(50% + 5px)
+      transparent calc(50% - 3px),
+      var(--rail) calc(50% - 3px) calc(50% - 2px),
+      transparent calc(50% - 2px) calc(50% + 2px),
+      var(--rail) calc(50% + 2px) calc(50% + 3px),
+      transparent calc(50% + 3px)
     ),
-    repeating-linear-gradient(var(--along), transparent 0 5px, #aeaa93 5px 8px)
+    repeating-linear-gradient(var(--along), transparent 0 5px, #b3b1a2 5px 7px)
       center / var(--ties) no-repeat;
   cursor: grab;
+}
+.scroll-control[data-reverse] {
+  --heading: 180deg;
 }
 .scroll-control:active {
   cursor: grabbing;
 }
 .scroll-y {
-  --ties: 16px 100%;
+  --ties: 10px 100%;
   writing-mode: vertical-lr;
   direction: ltr;
   grid-column: 2;
@@ -614,12 +635,12 @@
   min-height: 0;
 }
 .scroll-x {
-  --ties: 100% 16px;
+  --ties: 100% 10px;
   --direction: to bottom;
   --along: to right;
-  --engine: url("/locomotive.svg#across");
-  --engine-width: 112px;
-  --engine-length: 32px;
+  --engine: var(--horizontal-engine);
+  --engine-width: 46px;
+  --engine-length: 20px;
   grid-column: 1;
   grid-row: 2;
   width: 100%;
@@ -632,6 +653,7 @@
   height: var(--engine-length);
   border: 0;
   background: var(--engine) center/contain no-repeat;
+  transform: rotate(var(--heading, 0deg));
 }
 .scroll-control::-moz-range-thumb {
   width: var(--engine-width);
@@ -639,6 +661,7 @@
   border: 0;
   border-radius: 0;
   background: var(--engine) center/contain no-repeat;
+  transform: rotate(var(--heading, 0deg));
 }
 @media (pointer: coarse) {
   .scroll-control {
@@ -779,5 +802,32 @@
   .pz-preview-head .pz-info {
     grid-column: 1 / -1;
     margin: 0;
+  }
+}
+
+@media (min-width: 721px) {
+  .pz-preview:has(#ws-back-list[hidden]) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    :is(.pz-preview-head, .pz-panel-label) {
+      justify-content: center;
+      margin: 0;
+    }
+    > .scroll-frame {
+      flex: none;
+      min-height: 0;
+    }
+    .pz-stage {
+      min-height: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+    .pz-message {
+      padding: 4px 0;
+    }
   }
 }

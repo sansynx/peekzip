@@ -1,28 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 112">
-  <title>Red and ivory passenger locomotive with a coupled coach, seen from above</title>
-  <view id="upright" viewBox="0 0 32 112"/>
-  <view id="across" viewBox="32 0 112 32"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 52">
+  <title>British diesel shunter seen from above</title>
+  <view id="blue-down" viewBox="0 0 24 52"/>
+  <view id="red-down" viewBox="24 0 24 52"/>
+  <view id="blue-right" viewBox="48 0 52 24"/>
+  <view id="red-right" viewBox="48 24 52 24"/>
   <defs>
-    <linearGradient id="roof"><stop stop-color="#9b9788"/><stop offset=".18" stop-color="#ede7d2"/><stop offset=".5" stop-color="#fff7dc"/><stop offset=".86" stop-color="#d6cfb7"/><stop offset="1" stop-color="#8c897c"/></linearGradient>
-    <linearGradient id="paint"><stop stop-color="#833528"/><stop offset=".24" stop-color="#c95739"/><stop offset=".56" stop-color="#e0744b"/><stop offset="1" stop-color="#983d2e"/></linearGradient>
+    <g id="shunter" stroke-linejoin="round">
+      <!-- Chassis, running boards and buffers -->
+      <path fill="#272b2a" d="M3 3h18v45H3zM2 0h5v4H2zm15 0h5v4h-5zM2 48h5v4H2zm15 0h5v4h-5z"/>
+      <path fill="#696963" d="M4 16h2v27H4zm14 0h2v27h-2z"/>
+      <!-- Wide cab at the rear and narrow, square-ended engine bonnet -->
+      <rect x="2" y="3" width="20" height="15" rx="1.5" fill="currentColor" stroke="#252e2e"/>
+      <path d="M3.5 5h17v7h-17z" fill="#545856" stroke="#363c3b"/>
+      <path d="M5 6h14" stroke="#a4a397"/>
+      <path fill="#c4d9d5" d="M4 14h5v2H4zm11 0h5v2h-5z"/>
+      <rect x="6" y="17" width="12" height="26" rx="1" fill="currentColor" stroke="#29302f"/>
+      <path d="M8 19v21" stroke="#fff" stroke-opacity=".4"/>
+      <path d="M11 20h4v4h-4z" fill="#262e2e"/>
+      <path d="M9 29h6m-6 3h6m-6 3h6" stroke="#1f2e31" stroke-width="1.4"/>
+      <!-- The warning chevrons mark the leading end -->
+      <path d="M3 41h18v6H3z" fill="#eac45c"/>
+      <path d="m3 42 4 4 5-4 5 4 4-4" fill="none" stroke="#2a2e2c" stroke-width="2"/>
+      <path d="M2 47h20v2H2z" fill="#843d33"/>
+    </g>
   </defs>
-  <g id="train" stroke-linejoin="round">
-    <!-- Wheels and coupling remain visible between the two bodies -->
-    <path fill="#292e2b" d="M2 18h28v8H2zm0 29h28v8H2zm12 9h4v12h-4zM3 71h26v7H3zm0 27h26v7H3z"/>
-    <!-- Streamlined locomotive nose and wraparound cab glass -->
-    <path d="M16 2C9 2 4 11 4 23v31q0 4 4 4h16q4 0 4-4V23C28 11 23 2 16 2Z" fill="url(#paint)" stroke="#373831" stroke-width="1.5"/>
-    <path d="M6 18q10-8 20 0l-2 7q-8-4-16 0z" fill="#25424b" stroke="#ede5c9" stroke-width="1.4"/>
-    <path d="M16 15v7" stroke="#f2e6c9" stroke-width="1.4"/>
-    <path d="M12 8q4-4 8 0" stroke="#ffe3a0" stroke-width="2.6" fill="none"/>
-    <path d="M8 29q8-5 16 0v23H8Z" fill="url(#roof)" stroke="#803c2e"/>
-    <circle cx="16" cy="36" r="5" fill="#637170" stroke="#424b47"/>
-    <path d="m13 33 6 6m0-6-6 6M11 45h10m-10 3h10" stroke="#5b635d" stroke-width="1.2"/>
-    <path d="M5 54h22" stroke="#e8cfa5" stroke-width="2"/>
-    <!-- The coach has a fluted silver roof and two rows of side windows -->
-    <rect x="4" y="64" width="24" height="45" rx="4" fill="#a54835" stroke="#393b34" stroke-width="1.5"/>
-    <rect x="8" y="66" width="16" height="41" rx="4" fill="url(#roof)"/>
-    <path d="M12 70v33m4-33v33m4-33v33" stroke="#bab59f" fill="none"/>
-    <path d="M6 70v32m20-32v32" stroke="#263e47" stroke-width="2" stroke-dasharray="4 1.5"/>
+  <g color="#32638e">
+    <use href="#shunter"/>
+    <use href="#shunter" transform="translate(48 24) rotate(-90)"/>
   </g>
-  <use href="#train" transform="translate(144 0) rotate(90)"/>
+  <g color="#a0473d">
+    <use href="#shunter" x="24"/>
+    <use href="#shunter" transform="translate(48 48) rotate(-90)"/>
+  </g>
 </svg>
