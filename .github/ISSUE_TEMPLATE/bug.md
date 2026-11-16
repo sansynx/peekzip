@@ -3,7 +3,7 @@ name: Bug report
 about: Report a reproducible problem with the viewer
 ---
 
-For suspected vulnerabilities, follow SECURITY.md and keep details private.
+For suspected vulnerabilities, [report privately](https://github.com/sansynx/peekzip/security/advisories/new).
 
 ## Steps to reproduce
 

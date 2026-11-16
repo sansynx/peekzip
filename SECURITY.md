@@ -1,11 +1,13 @@
 # Security
 
-Report vulnerabilities privately. On GitHub, use **Security → Report a vulnerability** when the repository offers private reporting. If that option is unavailable, open an issue asking the maintainer for a private reporting channel and withhold the vulnerability details until one is available.
+[Report a vulnerability privately on GitHub](https://github.com/sansynx/peekzip/security/advisories/new). Use a synthetic archive to reproduce the issue and keep sensitive details out of public issues.
 
-Include the affected commit or deployment, browser version, minimal steps using synthetic data, and the impact you observed. Remove signed URLs, tokens, private filenames and real archives from attachments and logs.
+Include the affected commit or deployment, browser version, reproduction steps and observed impact. Remove signed URLs, credentials and personal filenames from attachments.
 
-Report against the current main branch or the hosted viewer. There is no published release-support schedule.
+Reports should target `main` or the [live viewer](https://peekzip.vercel.app). There is no published release-support schedule.
 
 ## Privacy boundaries
 
-Local files are processed in the browser. Remote archives are read from their own host using bounded HTTP ranges. A shared preview link identifies the archive and entry and grants no additional access control over the source. Treat untrusted archive contents and filenames as data in any proposed preview change.
+- Local archive contents stay in the browser. A local share link contains the archive name, byte size and selected path. The recipient supplies a matching ZIP.
+- Remote reads go directly to the archive host using bounded byte ranges. A hosted share link contains the source URL and selected path. Access to other entries follows the source host’s permissions.
+- Treat filenames, paths and preview contents as untrusted input.

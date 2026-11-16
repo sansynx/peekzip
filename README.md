@@ -2,96 +2,47 @@
 
 # peekzip
 
-Open a ZIP, see what’s inside, and download the file you came for. Choose a ZIP from your device or paste a direct link. For remote archives, peekzip reads the file list first and fetches the bytes needed for the entry you select.
+Look inside a ZIP and download just the file you need. Open a local archive or paste a direct ZIP URL. For a remote ZIP, peekzip reads the index first and fetches the bytes needed for your selection.
 
-**[Open the live dashboard](https://peekzip.vercel.app)** and choose **Try a sample** to explore a real archive with a map, a CSV, and two nested ZIPs.
+**[Try peekzip](https://peekzip.vercel.app)** → **Try a sample** → open the map, the CSV or a nested ZIP
 
-## What you can do
+## Browse an archive
 
-- Search filenames and paths, preview text, images, or CSV tables, and save individual entries
-- Open a ZIP inside another ZIP and return to the parent archive
-- Share a link to a specific entry, even inside a nested ZIP. Hosted archives open directly. Local archives open when the recipient chooses their copy
-- On phones, switch between **Files** and **Preview** without losing your search
-- In the viewer, press `/` to find a file, `↓` to move from search into the results, and `j` or `k` to preview the next or previous match. Press `?` or choose **Keyboard shortcuts** for all ten commands. After opening a file, use ↑ and ↓ to preview adjacent matches. Home and End move to the first or last result, Enter opens it, and Escape returns to the list or cancels a read
+- Search by filename or path. Preview text, images and CSV tables, then choose **Save file** to download an entry.
+- Open a nested ZIP to browse its contents. On phones, switch between **Files** and **Preview**.
+- Press `/` to search. After opening a file, use `↑` and `↓` for adjacent previews or `?` for the shortcut guide.
 
-## What leaves your device
+## Privacy and sharing
 
-Local archives stay in the browser. Opening a remote ZIP connects your browser directly to its host. The host sees those requests. The viewer bundles its fonts and scripts and uses no analytics, upload service, or archive storage.
+The viewer bundles its scripts and fonts and has no analytics or archive storage.
 
-The remote host must return HTTP 206 responses to byte-range requests. Cross-origin hosts must allow the viewer origin through CORS and expose the `Content-Range` header. If the host only offers a full download, peekzip stops.
-
-A hosted archive link includes the original archive URL and selected path in the URL fragment. A recipient can see both and can access whatever the original URL allows, including other entries. Hosted links are available for remote URLs without query strings or fragments. For a local ZIP, **Share file** creates a link containing the archive name, byte size and selected path. Send the archive separately if needed. The recipient chooses their matching local copy and peekzip opens the selected entry.
+- **Local ZIPs** stay in your browser. **Share file** creates a link containing the archive name, size and selected path. The recipient needs their own copy of the ZIP.
+- **Hosted ZIPs** are read directly from the source. A share link includes the source URL and selected path. Recipients with access can browse other entries. Sharing is disabled for source URLs containing a query string or fragment.
+- **Hosting a ZIP?** Serve byte ranges with HTTP `206`. For cross-origin access, allow the viewer origin through CORS and expose `Content-Range`. If the host serves only full downloads, peekzip stops.
 
 ## Measured performance
 
-In the **100 GB ZIP64 test**, listing the remote archive transferred **65,857 bytes**. Previewing the first **192 KiB** of a stored log transferred another **196,676 bytes** including header reads. Local opens generated **zero archive network requests**.
+Opening the **100 GB** remote test ZIP transferred **65,857 bytes** for the index. Previewing the first **192 KiB** of a stored log transferred another **196,676 bytes**.
 
-Median elapsed time in milliseconds, measured on 15 November 2026
+| ZIP size | Local index | Remote index |
+| -------- | ----------: | -----------: |
+| 25 GB    |      105 ms |       140 ms |
+| 50 GB    |       79 ms |       105 ms |
+| 100 GB   |       51 ms |        68 ms |
 
-| Archive | Local index | Local log preview | HTTP index | HTTP log preview |
-| ------- | ----------: | ----------------: | ---------: | ---------------: |
-| 25 GB   |       104.8 |              81.0 |      140.4 |            107.2 |
-| 50 GB   |        79.0 |              71.3 |      105.3 |             80.3 |
-| 100 GB  |        51.1 |              55.7 |       67.5 |             52.8 |
-
-**Method** · 60 fresh Chromium contexts across three sizes, two sources and two nesting methods, with five runs per combination. Each fixture had three top-level entries, an allocated text prefix, a sparse middle and real nested data beyond 99% of the outer archive. GB uses decimal bytes. The HTTP source ran on loopback on the same Linux machine with two available CPUs and 7.7 GiB RAM. Timings exclude browser startup, page load and file selection. OS caches were shared and machine load varied. These measurements describe selective reads on this setup. Mobile networks, full archive extraction and archives with many thousands of filenames were outside this benchmark.
-
-All 60 preview prefixes and 120 downloaded files matched independent SHA-256 references. The stored nested path in the 100 GB remote fixture needed **197,421 bytes** to reach its receipt, compared with **34,690,490 bytes** for the deflated path. Saving the cached receipt generated zero additional archive requests.
-
-<details>
-<summary>Nested ZIP timings and transferred bytes for all sizes</summary>
-
-Each timing is a median in milliseconds over five runs. The last column includes the outer index, both inner indexes and the receipt preview. It excludes the separate log preview and binary download.
-
-| archive (GB) | source | inner ZIP methods | inner 1 | inner 2 | receipt preview | save cached receipt | save 32 MiB binary | HTTP bytes for index + nested receipt path |
-| -----------: | ------ | ----------------- | ------: | ------: | --------------: | ------------------: | -----------------: | -----------------------------------------: |
-|           25 | local  | stored            |    37.5 |    30.1 |           115.7 |                57.3 |              914.9 |                                          0 |
-|           25 | local  | deflated          |   529.2 |   415.7 |            30.3 |                61.1 |              865.6 |                                          0 |
-|           25 | remote | stored            |    66.1 |    55.2 |           156.7 |                48.6 |             1142.5 |                                    197,420 |
-|           25 | remote | deflated          |   646.6 |   362.6 |            27.5 |                35.3 |              853.7 |                                 34,690,489 |
-|           50 | local  | stored            |    30.1 |    30.4 |            95.2 |                32.1 |              768.1 |                                          0 |
-|           50 | local  | deflated          |   427.4 |   279.6 |            30.2 |                54.4 |              771.8 |                                          0 |
-|           50 | remote | stored            |    47.1 |    47.0 |            95.3 |                30.2 |              835.5 |                                    197,420 |
-|           50 | remote | deflated          |   626.6 |   411.7 |            29.8 |                28.7 |              782.3 |                                 34,690,489 |
-|          100 | local  | stored            |    30.0 |    30.1 |            63.9 |                22.6 |              642.4 |                                          0 |
-|          100 | local  | deflated          |   296.9 |   247.8 |            30.2 |                25.9 |              622.8 |                                          0 |
-|          100 | remote | stored            |    46.9 |    31.6 |            80.6 |                26.4 |              721.0 |                                    197,421 |
-|          100 | remote | deflated          |   446.7 |   230.0 |            30.2 |                28.0 |              519.1 |                                 34,690,490 |
-
-</details>
-
-<details>
-<summary>Earlier nesting benchmark and cancellation check</summary>
-
-A separate 20-run test used a 5,511,338,131-byte sparse ZIP64 archive. Each row is the median of five fresh Chromium contexts, in milliseconds.
-
-| Source and nesting | Open ZIP | Open level 1 | Open level 2 | Preview text | Save preview | Save 32 MiB |
-| ------------------ | -------: | -----------: | -----------: | -----------: | -----------: | ----------: |
-| local-stored       |     47.5 |           30 |         30.3 |         64.4 |         23.6 |       480.3 |
-| local-deflated     |     48.3 |        280.7 |        246.2 |         30.1 |         25.7 |       498.1 |
-| remote-stored      |     63.1 |         46.6 |         30.3 |         81.2 |         24.2 |       645.7 |
-| remote-deflated    |     67.8 |        479.3 |        230.1 |         30.1 |         25.6 |       498.2 |
-
-The remote stored path used 197,425 bytes to reach the receipt. Opening the deflated parent used 34,624,638 bytes at that step. These numbers come from an earlier build and fixture. [Individual measurements](benchmarks/results/early-nesting.json)
-
-In a separate cancellation check, an origin delayed its response by 850 ms. After the fix, aborting an in-flight prefix read settled in 12 ms, compared with 861 ms before the fix. This was a single comparison on loopback.
-
-</details>
-
-**Browser checks** · A separate 100 GB local-file smoke test verified the text prefix and nested receipt on Chromium 158, Firefox 159 and WebKit 27.2. The interface also passed 16 Playwright states on five desktop, tablet and phone configurations, covering dialogs, file previews, downloads, nested links, empty archives and errors. The 25–100 GB timings above come from the earlier archive-engine benchmark. A [clean-build recheck](benchmarks/results/100-release-check.json) repeated the four 100 GB source and nesting combinations and matched the archive byte counts. Its four runs are recorded separately from the 60-run timings.
-
-[Recorded measurements and reproduction steps](benchmarks/README.md)
+Medians rounded to the nearest millisecond from 60 Chromium runs with three-entry ZIP64 fixtures on one machine. Remote reads used loopback HTTP. [Preview timings, raw results and reproduction steps](benchmarks/README.md)
 
 ## Limits
 
-| Operation                 | Current limit                                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Archive index             | 100,000 entries and 32 MiB per index read                                                                                                        |
-| Full preview input        | 16 MiB, with at most 192 KiB rendered as text and up to 100 rows by 24 columns for CSV                                                           |
-| Larger stored text or CSV | First 192 KiB, with a partial-preview label and no whole-file checksum verification                                                              |
-| Save one complete file    | 256 MiB                                                                                                                                          |
-| Nested ZIPs               | Four levels. Stored children use slices of their parent. Compressed children expand in memory, up to 64 MiB each and 128 MiB along the open path |
-| Encrypted entries         | Password-protected entries cannot be opened                                                                                                      |
+| Operation                | Limit                                                                                               |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| Index                    | 100,000 entries and 32 MiB per index read                                                           |
+| Preview                  | 16 MiB per file. Text renders up to 192 KiB and CSV renders up to 100 rows × 24 columns             |
+| Large stored text or CSV | First 192 KiB only. Prefix previews skip whole-file checksum verification                           |
+| Save                     | 256 MiB per file                                                                                    |
+| Nested ZIPs              | Four levels. Compressed children expand in memory up to 64 MiB each and 128 MiB along the open path |
+
+Password-protected entries cannot be opened.
 
 ## Run locally
 
@@ -102,15 +53,8 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-To build and serve the static site locally
+[Contributing and build checks](CONTRIBUTING.md) · [Report a security issue](SECURITY.md)
 
-```sh
-pnpm run build
-pnpm run preview
-```
+## License
 
-## Project
-
-Built with Astro, TypeScript and zip.js. See [contributing](CONTRIBUTING.md) for development checks and [security](SECURITY.md) for private reporting.
-
-Code is [MIT licensed](LICENSE). The bundled [Instrument Sans](public/fonts/InstrumentSans-LICENSE.txt), [Instrument Serif](public/fonts/InstrumentSerif-LICENSE.txt) and [Phosphor icons](public/phosphor-license.txt) retain their respective notices.
+peekzip is [MIT licensed](LICENSE). Bundled assets have their own notices for [Instrument Sans](public/fonts/InstrumentSans-LICENSE.txt), [Instrument Serif](public/fonts/InstrumentSerif-LICENSE.txt) and [Phosphor icons](public/phosphor-license.txt).
