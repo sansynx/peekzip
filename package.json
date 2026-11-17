@@ -9,7 +9,7 @@
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
     "test": "node --test test/*.test.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --config=test/playwright.config.ts"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.25.0",

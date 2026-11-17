@@ -1,8 +1,9 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "@playwright/test";
 
 const baseURL = "http://127.0.0.1:4497";
 export default defineConfig({
-  testDir: "./e2e",
+  testMatch: "**/*.spec.ts",
   use: {
     baseURL,
     reducedMotion: "reduce",
@@ -20,6 +21,7 @@ export default defineConfig({
     },
   ],
   webServer: {
+    cwd: fileURLToPath(new URL("../", import.meta.url)),
     command: "astro preview --ignore-lock --host 127.0.0.1 --port 4497",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
