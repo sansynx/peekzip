@@ -29,7 +29,7 @@ Use the file list to preview text, CSV tables and images. You can open one ZIP i
 | Local file | Choose or drop a ZIP from your device. | Points to the selected entry. The recipient supplies their own copy with the same filename and byte size. |
 | Hosted file | Paste a direct `.zip` URL on the same scheme, hostname and port as the viewer. | Opens the selected entry for anyone who can read the source ZIP. They can also browse its other entries. |
 
-On the public viewer, hosted URLs must be on `https://peekzip.vercel.app`. The host must return HTTP `206` with a valid `Content-Range`. PeekZip omits credentials and rejects redirects. URLs containing a query or fragment can be opened directly, but sharing is disabled. For archives hosted elsewhere, download the ZIP and open it locally.
+The archive reader in this version enforces the viewer’s own origin. For a deployment at `https://peekzip.vercel.app`, the sample URL is `https://peekzip.vercel.app/sample/field-notes.zip`. The host must return HTTP `206` with a valid `Content-Range`. PeekZip omits credentials and rejects redirects. URLs containing a query or fragment can be opened directly, but sharing is disabled. For archives hosted elsewhere, download the ZIP and open it locally.
 
 ## Limits
 
