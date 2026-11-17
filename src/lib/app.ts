@@ -4,6 +4,7 @@ import {
   maxNestedDepth,
   maxSaveBytes,
   nestedLimit,
+  samplePath,
 } from "./archive-policy";
 import { csvPreviewRows } from "./csv";
 
@@ -788,7 +789,7 @@ get("open-form").addEventListener("submit", (event) => {
 get("sample").addEventListener("click", () => {
   cleanAddress();
   void open(
-    new URL("/sample/field-notes.zip", location.origin),
+    new URL(samplePath, location.origin),
     undefined,
     true,
   );

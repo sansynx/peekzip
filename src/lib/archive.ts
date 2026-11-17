@@ -3,6 +3,7 @@ import {
   maxNestedBytes,
   maxSaveBytes,
   nestedLimit,
+  samplePath,
 } from "./archive-policy.ts";
 import {
   BlobReader,
@@ -67,9 +68,9 @@ class RemoteReader extends HttpReader {
   }
 }
 
-function remoteReader(source: URL, lifetime: AbortSignal) {
+async function remoteReader(source: URL, lifetime: AbortSignal) {
   let version: { size: number; tag: string | null } | undefined;
-  return new RemoteReader(source, async (url, init) => {
+  async function fetchRange(url: string, init?: RequestInit) {
     const signal = init?.signal
       ? AbortSignal.any([lifetime, init.signal])
       : lifetime;
@@ -159,7 +160,20 @@ function remoteReader(source: URL, lifetime: AbortSignal) {
       });
     }
     return new Response(bounded, { status: 206, headers: response.headers });
-  });
+  }
+
+  // The bundled demo fits in one range. Keep its bytes for this archive session.
+  if (source.pathname === samplePath && !source.search && !source.hash) {
+    const sampleLimit = 256 * 1024;
+    const response = await fetchRange(source.href, {
+      headers: { Range: `bytes=0-${sampleLimit - 1}` },
+    });
+    if (version && version.size <= sampleLimit)
+      return new LocalReader(await response.blob());
+    // A larger replacement can still be browsed on demand.
+    await response.body?.cancel();
+  }
+  return new RemoteReader(source, fetchRange);
 }
 
 interface Archive {
@@ -241,14 +255,17 @@ export function openArchive(
 }
 
 async function indexArchive(
-  createReader: (signal: AbortSignal) => Reader<unknown>,
+  createReader: (
+    signal: AbortSignal,
+  ) => Reader<unknown> | Promise<Reader<unknown>>,
   signal: AbortSignal,
   depth = 0,
 ): Promise<Archive> {
   const lifetime = new AbortController();
   const active = AbortSignal.any([signal, lifetime.signal]);
   active.throwIfAborted();
-  const input = createReader(active);
+  const input = await createReader(active);
+  active.throwIfAborted();
   const zip = new ZipReader(input);
   const files: FileEntry[] = [];
 

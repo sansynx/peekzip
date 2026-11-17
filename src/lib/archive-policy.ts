@@ -1,3 +1,4 @@
+export const samplePath = "/sample/field-notes.zip";
 export const maxNestedDepth = 1;
 export const maxNestedBytes = 64 * 1024 ** 2;
 export const maxSaveBytes = 256 * 1024 ** 2;
