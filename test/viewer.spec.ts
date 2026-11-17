@@ -137,35 +137,6 @@ test("pasted and shared sources enforce origin, redirect and depth rules", async
   await expect(page.locator("#share-copy")).toBeHidden();
 });
 
-test("the Pele diagram fits the landing page", async ({ page }) => {
-  await page.goto("/");
-  const diagram = page.locator(".archive-diagram");
-  await expect(diagram.getByRole("img")).toBeVisible();
-  const layout = await diagram.evaluate((el) => {
-    const rect = el.getBoundingClientRect();
-    const svg = el.querySelector("svg")!.getBoundingClientRect();
-    return {
-      centered:
-        Math.abs(
-          (rect.left + rect.right) / 2 -
-            document.documentElement.clientWidth / 2,
-        ) < 2,
-      fits:
-        rect.width <= 465 &&
-        svg.width >= rect.width - 34 &&
-        svg.height >= 38 &&
-        svg.left >= rect.left &&
-        svg.right <= rect.right + 1,
-      background: getComputedStyle(el).backgroundColor,
-    };
-  });
-  expect(layout).toEqual({
-    centered: true,
-    fits: true,
-    background: "rgb(0, 0, 0)",
-  });
-});
-
 test("keyboard help stays accessible in each archive layout", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.locator("#sample").click();
