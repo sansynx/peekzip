@@ -7,7 +7,7 @@ import "../style.css";
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content="connect-src 'self'; object-src 'none'; base-uri 'none'" />}
+    {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://vercel.com/api/blob/; object-src 'none'; base-uri 'none'" />}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
@@ -80,6 +80,10 @@ import "../style.css";
             <h2 id="open-title">Open an archive</h2>
           </div>
           <noscript>Enable JavaScript to open and preview a ZIP in this browser.</noscript>
+          <div id="reference-info" hidden>
+            <p id="reference-file"></p>
+            <p>This older link needs <strong id="reference-zip"></strong>. Choose your copy below, or ask the sender to create a new file link.</p>
+          </div>
           <div class="sources">
             <div class="local-source">
               <span class="field-label">From your device</span>
@@ -101,7 +105,7 @@ import "../style.css";
             </div>
             <form id="open-form">
               <label class="field-label" for="zip-url">
-                ZIP link from this site
+                ZIP or PeekZip link
               </label>
               <div class="input-row">
                 <svg aria-hidden="true">
@@ -109,8 +113,8 @@ import "../style.css";
                 </svg>
                 <input
                   id="zip-url"
-                  type="url"
-                  placeholder="Paste a ZIP URL"
+                  type="text"
+                  placeholder="Paste a link"
                   inputmode="url"
                   enterkeyhint="go"
                   autocapitalize="none"
@@ -120,7 +124,7 @@ import "../style.css";
                   aria-describedby="open-status"
                 />
                 <button class="open-btn" type="submit">
-                  Open ZIP{" "}
+                  Open{" "}
                   <svg aria-hidden="true">
                     <use href="/icons.svg#arrow-right" />
                   </svg>
@@ -152,7 +156,7 @@ import "../style.css";
             <use href="/icons.svg#lock" />
           </svg>
           <span>
-            Local files stay on your device. Hosted ZIPs are read from this site.
+            Local ZIPs stay on your device. Creating a file link uploads only the selected entry.
           </span>
         </footer>
       </div>
@@ -235,7 +239,7 @@ import "../style.css";
             ],
             [
               "Save or share",
-              "Save file downloads that entry. Share file creates a link to this exact path. For a local ZIP, the recipient needs their own copy. Try a sample to see a hosted file link in action.",
+              "Save file downloads the selected entry. For a local ZIP, Share lets you upload just that file and create a link that lasts 24 hours.",
             ],
           ],
         },
@@ -244,7 +248,7 @@ import "../style.css";
           sections: [
             [
               "From your device",
-              "Your ZIP and its contents stay in this browser. Peekzip has no upload or archive storage service.",
+              "Your local ZIP stays in this browser. A file is uploaded only when you choose Create file link for that entry.",
             ],
             [
               "From a URL",
@@ -252,7 +256,7 @@ import "../style.css";
             ],
             [
               "When you share",
-              "Links expose the selected path and any nested ZIP names. Local links also include the archive name and size. Hosted links include the source URL and anyone with access can browse the rest of the archive. URLs with a query or fragment cannot be shared.",
+              "A new local file link gives anyone with the link access to that one entry for 24 hours. A hosted ZIP link includes the source and selected path, and recipients can browse the archive. Source URLs with a query or fragment cannot be shared.",
             ],
           ],
         },

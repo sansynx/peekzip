@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    {
+      "source": "/shared/:id.zip",
+      "destination": "/api/shared-file?id=:id"
+    }
+  ],
+  "functions": {
+    "api/*.mjs": {
+      "includeFiles": "src/lib/share-link.mjs"
+    }
+  }
+}

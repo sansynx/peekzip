@@ -162,15 +162,19 @@ async function remoteReader(source: URL, lifetime: AbortSignal) {
     return new Response(bounded, { status: 206, headers: response.headers });
   }
 
-  // The bundled demo fits in one range. Keep its bytes for this archive session.
-  if (source.pathname === samplePath && !source.search && !source.hash) {
-    const sampleLimit = 256 * 1024;
+  // Small single-file shares and the demo can be opened in one round trip.
+  if (
+    (source.pathname === samplePath || source.pathname.startsWith("/shared/")) &&
+    !source.search &&
+    !source.hash
+  ) {
+    const firstRangeLimit = 256 * 1024;
     const response = await fetchRange(source.href, {
-      headers: { Range: `bytes=0-${sampleLimit - 1}` },
+      headers: { Range: `bytes=0-${firstRangeLimit - 1}` },
     });
-    if (version && version.size <= sampleLimit)
+    if (version && version.size <= firstRangeLimit)
       return new LocalReader(await response.blob());
-    // A larger replacement can still be browsed on demand.
+    // Read larger archives on demand.
     await response.body?.cancel();
   }
   return new RemoteReader(source, fetchRange);
