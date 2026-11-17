@@ -111,7 +111,10 @@ import "../style.css";
                 <input
                   id="zip-url"
                   type="url"
-                  placeholder="Paste a same-site .zip URL"
+                  placeholder="Paste a ZIP URL"
+                  inputmode="url"
+                  enterkeyhint="go"
+                  autocapitalize="none"
                   required
                   autocomplete="off"
                   spellcheck="false"
@@ -167,6 +170,7 @@ import "../style.css";
         </button>
       </div>
       <div class="dialog-copy"></div>
+      <button type="button" id="help-shortcuts" class="quiet" aria-haspopup="dialog" aria-controls="keys-dialog">Keyboard shortcuts</button>
     </dialog>
     <script>
       const root = document.documentElement;
@@ -261,6 +265,7 @@ import "../style.css";
           button.addEventListener("click", () => {
             const { title, sections } =
               content[button.dataset.dialog as keyof typeof content];
+            dialog.dataset.topic = button.dataset.dialog;
             dialog.querySelector("h2")!.textContent = title;
             const list = document.createElement("dl");
             for (const [heading, copy] of sections) {

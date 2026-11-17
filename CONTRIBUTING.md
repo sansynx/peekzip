@@ -21,3 +21,5 @@ Describe what changed and how you checked it. For a bug, include the browser ver
 Dependabot checks npm packages and GitHub Actions weekly. Run the same release checks on dependency updates.
 
 Report vulnerabilities through the [private reporting process](SECURITY.md).
+
+Bundled asset licenses are in [Instrument Sans](public/fonts/InstrumentSans-LICENSE.txt), [Instrument Serif](public/fonts/InstrumentSerif-LICENSE.txt) and [Phosphor](public/phosphor-license.txt).
