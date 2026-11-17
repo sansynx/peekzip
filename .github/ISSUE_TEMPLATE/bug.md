@@ -7,7 +7,7 @@ For suspected vulnerabilities, [report privately](https://github.com/sansynx/pee
 
 ## Steps to reproduce
 
-Include the browser and version, local or remote input, and a minimal synthetic example.
+Include the browser and version, whether you opened a local file or a same-origin link, and a minimal synthetic example. For share-link issues, describe what the recipient saw. Omit private filenames and URLs.
 
 ## Expected behavior
 

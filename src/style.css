@@ -161,7 +161,7 @@ p {
 .privacy:hover {
   background: var(--surface);
 }
-#landing svg,
+#landing :where(.opener, .note) svg,
 .privacy svg,
 .dismiss svg {
   width: 19px;

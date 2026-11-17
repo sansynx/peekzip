@@ -1,4 +1,11 @@
 import type { openArchive } from "./archive";
+import {
+  hostedArchiveUrl,
+  maxNestedDepth,
+  maxSaveBytes,
+  nestedLimit,
+} from "./archive-policy";
+import { csvPreviewRows } from "./csv";
 
 type Archive = Awaited<ReturnType<typeof openArchive>>;
 type Entry = Archive["entries"][number];
@@ -59,11 +66,7 @@ const images: Record<string, string> = {
   bmp: "image/bmp",
 };
 const PREVIEW_LIMIT = 16 * 1024 ** 2;
-const SAVE_LIMIT = 256 * 1024 ** 2;
 const TEXT_LIMIT = 192 * 1024;
-const NESTED_LIMIT = 64 * 1024 ** 2;
-const NESTED_BUDGET = 128 * 1024 ** 2;
-const MAX_DEPTH = 4;
 const parents: Parent[] = [];
 
 let archive: Archive | undefined;
@@ -206,18 +209,6 @@ function home() {
   window.scrollTo(0, 0);
 }
 
-function parseUrl(value: string) {
-  const url = new URL(value);
-  if (
-    !["https:", "http:"].includes(url.protocol) ||
-    url.username ||
-    url.password
-  ) {
-    throw new Error("Use a direct HTTP or HTTPS link to a ZIP.");
-  }
-  return url;
-}
-
 function canShare(value: File | URL | undefined): value is URL {
   return value instanceof URL && !value.search && !value.hash;
 }
@@ -298,6 +289,19 @@ function showFiles() {
     `${matches.length.toLocaleString()} ${matches.length === 1 ? "file" : "files"}`;
 }
 
+function fileRow(item: Entry, position?: number) {
+  if (position !== undefined && position >= 0) {
+    const offset = Math.floor(position / PAGE_SIZE) * PAGE_SIZE;
+    if (offset !== pageOffset) {
+      pageOffset = offset;
+      showFiles();
+    }
+  }
+  return fileList.querySelector<HTMLButtonElement>(
+    `[data-index="${item.index}"]`,
+  );
+}
+
 function focusFile(position: number) {
   const bounded = Math.min(Math.max(0, position), matches.length - 1);
   const item = matches[bounded];
@@ -306,15 +310,7 @@ function focusFile(position: number) {
     return;
   }
   focusIndex = item.index;
-  const offset = Math.floor(bounded / PAGE_SIZE) * PAGE_SIZE;
-  if (offset !== pageOffset) {
-    pageOffset = offset;
-    showFiles();
-  }
-  const row = fileList.querySelector<HTMLButtonElement>(
-    `[data-index="${item.index}"]`,
-  );
-  row?.focus();
+  fileRow(item, bounded)?.focus();
 }
 function refocusList() {
   setPanel("files");
@@ -325,37 +321,22 @@ function refocusList() {
   else focusFile(position);
 }
 
-// The preview is deliberately bounded for wide and multiline CSV files.
+function locateSelected() {
+  if (selected && search.value && !matches.includes(selected)) {
+    search.value = "";
+    filterFiles();
+  }
+  refocusList();
+}
+
 function csvTable(text: string) {
   const table = document.createElement("table");
-  let field = "";
-  let quoted = false;
-  let row: string[] = [];
-  function finishRow() {
-    row.push(field);
+  for (const values of csvPreviewRows(text)) {
     const tr = table.insertRow();
-    for (const fieldValue of row.slice(0, 24)) {
-      tr.append(element(table.rows.length === 1 ? "th" : "td", "", fieldValue));
+    for (const value of values) {
+      tr.append(element(table.rows.length === 1 ? "th" : "td", "", value));
     }
-    row = [];
-    field = "";
   }
-  for (let i = 0; i < text.length && table.rows.length < 100; i++) {
-    const char = text[i];
-    if (char === '"' && (quoted || !field)) {
-      if (quoted && text[i + 1] === '"') {
-        field += '"';
-        i++;
-      } else quoted = !quoted;
-    } else if (char === "," && !quoted) {
-      row.push(field);
-      field = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && text[i + 1] === "\n") i++;
-      finishRow();
-    } else field += char;
-  }
-  if ((row.length || field.length) && table.rows.length < 100) finishRow();
   return table;
 }
 
@@ -397,21 +378,6 @@ async function preview(blob: Blob, item: Entry, signal: AbortSignal) {
     notice.textContent = `Preview shows the first ${displaySize(TEXT_LIMIT)}.`;
 }
 
-function nestedLimit(item: Entry) {
-  if (parents.length >= MAX_DEPTH)
-    return "You can explore up to four nested ZIP levels.";
-  if (item.stored) return "";
-  if (item.size > NESTED_LIMIT)
-    return "Compressed nested ZIPs can be opened up to 64 MiB each.";
-  const buffered = parents.reduce(
-    (total, parent) => total + (parent.entry.stored ? 0 : parent.entry.size),
-    item.size,
-  );
-  if (buffered > NESTED_BUDGET)
-    return "These compressed nested archives exceed the 128 MiB combined limit.";
-  return "";
-}
-
 function targetFor(item: Entry, active: Archive): Target {
   const duplicate = active.entries.some(
     (entry) => entry.name === item.name && entry.index !== item.index,
@@ -445,9 +411,8 @@ async function pick(item: Entry, reveal = false) {
   fileList
     .querySelector('[aria-current="true"]')
     ?.setAttribute("aria-current", "false");
-  const row = fileList.querySelector<HTMLButtonElement>(
-    `[data-index="${item.index}"]`,
-  );
+  const row =
+    fileRow(item) ?? (reveal ? fileRow(item, matches.indexOf(item)) : null);
   row?.setAttribute("aria-current", "true");
   get("ws-filename").textContent = basename(item.name);
   if (reveal) {
@@ -455,10 +420,8 @@ async function pick(item: Entry, reveal = false) {
       previewView.focus({ preventScroll: true });
       if (get("ws-filename").getBoundingClientRect().top < 64)
         get("ws-preview-panel").scrollIntoView({ block: "start" });
-    } else if (row) {
-      row.focus({ preventScroll: true });
     } else {
-      focusFile(matches.findIndex((entry) => entry.index === item.index));
+      row?.focus({ preventScroll: true });
     }
   }
 
@@ -472,12 +435,12 @@ async function pick(item: Entry, reveal = false) {
     .filter(Boolean)
     .join(" · ");
   share.hidden = false;
-  save.hidden = item.size > SAVE_LIMIT;
+  save.hidden = item.size > maxSaveBytes;
   enter.hidden = extension(item.name) !== "zip";
   enter.disabled = false;
   notice.textContent = "";
   if (!enter.hidden) {
-    const limit = nestedLimit(item);
+    const limit = nestedLimit(parents.length, item);
     enter.disabled = Boolean(limit);
     showStage(
       limit ||
@@ -492,9 +455,9 @@ async function pick(item: Entry, reveal = false) {
     item.stored &&
     item.size > PREVIEW_LIMIT &&
     (kind === "text" || kind === "csv");
-  if (!partial && item.size > SAVE_LIMIT) {
+  if (!partial && item.size > maxSaveBytes) {
     showStage(
-      `This entry exceeds the ${displaySize(SAVE_LIMIT)} per-file limit.`,
+      `This entry exceeds the ${displaySize(maxSaveBytes)} per-file limit.`,
     );
     return;
   }
@@ -521,7 +484,7 @@ async function pick(item: Entry, reveal = false) {
         `Partial preview · first ${displaySize(blob.size)} of ${displaySize(item.size)}. Whole-file checksum unverified.`,
       ];
       if (kind === "csv") limits.push("Showing up to 100 rows and 24 columns.");
-      if (item.size > SAVE_LIMIT)
+      if (item.size > maxSaveBytes)
         limits.push("Saving is limited to 256 MiB per file.");
       notice.textContent = limits.join(" ");
     }
@@ -587,7 +550,7 @@ async function descend(item: Entry) {
   if (!archive) return false;
   const parent = archive;
   const pending = reading.signal;
-  const limit = nestedLimit(item);
+  const limit = nestedLimit(parents.length, item);
   if (extension(item.name) !== "zip" || limit) {
     showStage(limit || "The linked path is not a ZIP archive.");
     return false;
@@ -599,21 +562,8 @@ async function descend(item: Entry) {
   const cancel = () => opening.abort();
   pending.addEventListener("abort", cancel, { once: true });
   try {
-    const { openArchive } = await import("./archive");
     const lifetime = AbortSignal.any([session.signal, opening.signal]);
-    let child: Archive | undefined;
-    if (item.stored) {
-      child = await parent.openStored(item.index, lifetime);
-      if (!child) throw new Error("This nested ZIP cannot be read in place.");
-    } else {
-      const blob =
-        readyBlob ?? (await parent.read(item.index, pending, NESTED_LIMIT));
-      pending.throwIfAborted();
-      child = await openArchive(
-        new File([blob], basename(item.name)),
-        lifetime,
-      );
-    }
+    const child = await parent.openNested(item.index, lifetime);
     if (pending.aborted) {
       await child.close();
       return false;
@@ -741,7 +691,7 @@ async function download() {
   enter.disabled = true;
   try {
     const blob =
-      readyBlob ?? (await archive.read(item.index, signal, SAVE_LIMIT));
+      readyBlob ?? (await archive.read(item.index, signal, maxSaveBytes));
     if (signal.aborted) return;
     readyBlob = blob;
     const url = URL.createObjectURL(blob);
@@ -755,7 +705,7 @@ async function download() {
   } finally {
     if (!signal.aborted) {
       busy(false);
-      enter.disabled = Boolean(nestedLimit(item));
+      enter.disabled = Boolean(nestedLimit(parents.length, item));
       save.disabled = false;
       save.removeAttribute("aria-busy");
       get("ws-save-label").textContent = "Save file";
@@ -822,11 +772,11 @@ function showShareDialog() {
 get("open-form").addEventListener("submit", (event) => {
   event.preventDefault();
   try {
-    const url = parseUrl(urlInput.value.trim());
+    const url = hostedArchiveUrl(urlInput.value.trim(), location.origin);
     cleanAddress();
     void open(url);
-  } catch {
-    status.textContent = "Enter a direct HTTP or HTTPS link to a ZIP.";
+  } catch (error) {
+    status.textContent = message(error);
   }
 });
 get("sample").addEventListener("click", () => {
@@ -890,13 +840,13 @@ cancelOpen?.addEventListener("click", () => {
 });
 cancelRead.addEventListener("click", () => {
   releasePreview();
-  if (selected) enter.disabled = Boolean(nestedLimit(selected));
+  if (selected) enter.disabled = Boolean(nestedLimit(parents.length, selected));
   notice.textContent = "Operation cancelled.";
   if (!stage.querySelector("img,table,pre"))
     showStage("Select the file again to retry.");
   refocusList();
 });
-backToFiles.addEventListener("click", refocusList);
+backToFiles.addEventListener("click", locateSelected);
 fileList.addEventListener("focusin", (event) => {
   const button = event.target;
   if (!(button instanceof HTMLButtonElement) || !button.dataset.index) return;
@@ -956,7 +906,7 @@ registerShortcuts("keys-index", [
       search.select();
     },
   ],
-  ["i", "Go to the file index", refocusList],
+  ["i", "Go to the file index", locateSelected],
   ["[", "Previous results page", () => changePage(previous)],
   ["]", "Next results page", () => changePage(more)],
 ]);
@@ -1082,7 +1032,7 @@ function followLink() {
   }
   if (parts.get("v") !== "1" || (!src && !local)) return;
   try {
-    const url = src ? parseUrl(src) : undefined;
+    const url = src ? hostedArchiveUrl(src, location.origin) : undefined;
     const name = parts.get("file");
     const index = parts.get("index");
     if (url && !canShare(url))
@@ -1090,10 +1040,8 @@ function followLink() {
         "This link contains a private source URL. Open the archive directly instead.",
       );
     const parents = parts.getAll("parent");
-    if (parents.length > MAX_DEPTH)
-      throw new Error(
-        "This link exceeds the supported four nested ZIP levels.",
-      );
+    if (parents.length > maxNestedDepth)
+      throw new Error("This link goes beyond the one nested ZIP limit.");
     const ancestry = parents.map((value) => {
       const segment: unknown = JSON.parse(value);
       if (
