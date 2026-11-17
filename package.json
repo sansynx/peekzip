@@ -8,13 +8,16 @@
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@zip.js/zip.js": "^2.25.0",
     "astro": "^7.4.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "pele": "^1.13.0",
     "typescript": "^7.0.2"
   },
   "license": "MIT"

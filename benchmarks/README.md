@@ -64,7 +64,14 @@ In a separate cancellation check, an origin delayed its response by 850 ms. Afte
 
 A separate 100 GB local-file smoke test verified the text prefix and nested receipt on Chromium 158, Firefox 159 and WebKit 27.2. The interface also passed 16 Playwright states on five desktop, tablet and phone configurations, covering dialogs, file previews, downloads, nested links, empty archives and errors. The 25–100 GB timings above come from the earlier archive-engine benchmark. A [clean-build recheck](results/100-release-check.json) repeated the four 100 GB source and nesting combinations and matched the archive byte counts. Its four runs are recorded separately from the 60-run timings.
 
-## Reproduce
+## Reproduce the historical measurements
+
+The published runner exercised two nested levels and a separate HTTP origin. Current PeekZip permits one nested level and the viewer’s own origin. To reproduce the recorded workload, run both the app and the runner from the following historical checkout. For current release checks use [the Playwright suite](../CONTRIBUTING.md#before-opening-a-pull-request).
+
+```sh
+git worktree add --detach ../peekzip-benchmark 0d75c7e058bb50fd52875d2aa6a9cb21741f76fd
+cd ../peekzip-benchmark
+```
 
 Use Linux with a sparse-file-capable filesystem, Python 3, Node.js 24 and pnpm. The three fixtures occupy about 0.45 GB on the original ext4 filesystem but represent 175 GB of logical data. Copying them to a filesystem without sparse support can allocate their full size.
 

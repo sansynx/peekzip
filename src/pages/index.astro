@@ -1,4 +1,5 @@
 ---
+import ArchiveDiagram from "../components/ArchiveDiagram.astro";
 import Workspace from "../components/Workspace.astro";
 import "../style.css";
 ---
@@ -7,7 +8,12 @@ import "../style.css";
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content="connect-src 'self'; object-src 'none'; base-uri 'none'" />}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Browse local ZIPs or open a ZIP hosted on this site, preview files, and download just the file you need."
+    />
     <meta name="referrer" content="no-referrer" />
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
     <title>peekzip · archive explorer</title>
@@ -74,6 +80,7 @@ import "../style.css";
           <div class="open-head">
             <h2 id="open-title">Open an archive</h2>
           </div>
+          <noscript>Enable JavaScript to open and preview a ZIP in this browser.</noscript>
           <div class="sources">
             <div class="local-source">
               <span class="field-label">From your device</span>
@@ -95,7 +102,7 @@ import "../style.css";
             </div>
             <form id="open-form">
               <label class="field-label" for="zip-url">
-                From a link
+                ZIP link from this site
               </label>
               <div class="input-row">
                 <svg aria-hidden="true">
@@ -104,7 +111,7 @@ import "../style.css";
                 <input
                   id="zip-url"
                   type="url"
-                  placeholder="Paste ZIP URL"
+                  placeholder="Paste a same-site .zip URL"
                   required
                   autocomplete="off"
                   spellcheck="false"
@@ -138,13 +145,13 @@ import "../style.css";
             </svg>
           </button>
         </section>
+        <ArchiveDiagram />
         <footer class="note">
           <svg aria-hidden="true">
             <use href="/icons.svg#lock" />
           </svg>
           <span>
-            Local files stay on your device. Remote ZIPs are read directly from
-            their source.
+            Local files stay on your device. Hosted ZIPs are read from this site.
           </span>
         </footer>
       </div>
@@ -218,11 +225,11 @@ import "../style.css";
           sections: [
             [
               "Open an archive",
-              "Choose a ZIP from your device or paste a direct ZIP URL. For remote files the host must support byte ranges and allow access from this site.",
+              "Choose a ZIP from your device, or paste a direct .zip URL with the same protocol, host and port as this site. The ZIP must support byte ranges. Redirects are blocked.",
             ],
             [
               "Find the file",
-              "Search by name or folder, then select a row to preview it. On phones, tap Files to go back. Use Open nested ZIP to look inside another archive.",
+              "Search by name or folder, then select a row to preview it. On phones, tap Files to go back. You can open one child ZIP. Opening another ZIP inside that child is blocked.",
             ],
             [
               "Save or share",
@@ -239,7 +246,7 @@ import "../style.css";
             ],
             [
               "From a URL",
-              "Your browser requests the index and selected bytes directly from the ZIP host. That host sees your IP and the ranges you request.",
+              "Your browser requests byte ranges from this site without cookies. The host sees your IP and the requested ranges. Other origins and redirects are blocked.",
             ],
             [
               "When you share",

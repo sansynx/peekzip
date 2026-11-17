@@ -1,4 +1,10 @@
 import {
+  hostedArchiveUrl,
+  maxNestedBytes,
+  maxSaveBytes,
+  nestedLimit,
+} from "./archive-policy.ts";
+import {
   BlobReader,
   Reader,
   HttpReader,
@@ -62,13 +68,6 @@ class RemoteReader extends HttpReader {
 }
 
 function remoteReader(source: URL, lifetime: AbortSignal) {
-  if (
-    !["https:", "http:"].includes(source.protocol) ||
-    source.username ||
-    source.password
-  ) {
-    throw new Error("Enter a direct HTTP or HTTPS link to a ZIP file.");
-  }
   let version: { size: number; tag: string | null } | undefined;
   return new RemoteReader(source, async (url, init) => {
     const signal = init?.signal
@@ -90,6 +89,8 @@ function remoteReader(source: URL, lifetime: AbortSignal) {
         ...init,
         headers,
         signal,
+        mode: "same-origin",
+        redirect: "error",
         credentials: "omit",
         cache: "no-store",
         referrerPolicy: "no-referrer",
@@ -97,7 +98,7 @@ function remoteReader(source: URL, lifetime: AbortSignal) {
     } catch (error) {
       signal.throwIfAborted();
       throw new Error(
-        "The host could not be reached or does not allow cross-origin ZIP reads.",
+        "This ZIP could not be reached directly on this site. Redirects are blocked.",
         { cause: error },
       );
     }
@@ -169,7 +170,7 @@ interface Archive {
     maxBytes: number,
     signal: AbortSignal,
   ): Promise<Blob>;
-  openStored(index: number, signal: AbortSignal): Promise<Archive | undefined>;
+  openNested(index: number, signal: AbortSignal): Promise<Archive>;
   close(): Promise<void>;
 }
 
@@ -228,11 +229,12 @@ class EntryReader extends Reader<Reader<unknown>> {
 export function openArchive(
   source: File | URL,
   signal: AbortSignal,
+  viewerOrigin = globalThis.location?.origin,
 ): Promise<Archive> {
   return indexArchive(
     (active) =>
       source instanceof URL
-        ? remoteReader(source, active)
+        ? remoteReader(hostedArchiveUrl(source.href, viewerOrigin), active)
         : new LocalReader(source),
     signal,
   );
@@ -241,6 +243,7 @@ export function openArchive(
 async function indexArchive(
   createReader: (signal: AbortSignal) => Reader<unknown>,
   signal: AbortSignal,
+  depth = 0,
 ): Promise<Archive> {
   const lifetime = new AbortController();
   const active = AbortSignal.any([signal, lifetime.signal]);
@@ -297,21 +300,70 @@ async function indexArchive(
     throw error;
   }
 
+  async function read(
+    index: number,
+    signal: AbortSignal,
+    maxBytes: number,
+  ): Promise<Blob> {
+    const reading = AbortSignal.any([active, signal]);
+    reading.throwIfAborted();
+    const file = files[index];
+    if (!file) throw new Error("This file is no longer available.");
+    if (file.encrypted) throw new Error("This file is password-protected.");
+    const limit = Math.min(maxSaveBytes, maxBytes);
+    if (
+      !Number.isSafeInteger(maxBytes) ||
+      maxBytes < 0 ||
+      file.uncompressedSize > limit ||
+      file.compressedSize > limit + Math.ceil(limit / 100) + 65536
+    ) {
+      throw new Error("This file exceeds the size limit for this action.");
+    }
+    const parts: Uint8Array<ArrayBuffer>[] = [];
+    let received = 0;
+    await file.getData(
+      new WritableStream<Uint8Array>({
+        write(chunk) {
+          reading.throwIfAborted();
+          received += chunk.byteLength;
+          if (received > limit || received > file.uncompressedSize) {
+            throw new Error("The extracted file exceeds its allowed size.");
+          }
+          parts.push(new Uint8Array(chunk));
+        },
+      }),
+      { signal: reading, checkCrc32: true },
+    );
+    reading.throwIfAborted();
+    if (received !== file.uncompressedSize)
+      throw new Error("The extracted file is incomplete.");
+    return new Blob(parts);
+  }
+
+  const entries = files.map((file, index) => ({
+    name: file.filename,
+    size: file.uncompressedSize,
+    stored:
+      !file.encrypted &&
+      file.compressionMethod === 0 &&
+      file.compressedSize === file.uncompressedSize,
+    index,
+  }));
   return {
-    entries: files.map((file, index) => ({
-      name: file.filename,
-      size: file.uncompressedSize,
-      stored:
-        !file.encrypted &&
-        file.compressionMethod === 0 &&
-        file.compressedSize === file.uncompressedSize,
-      index,
-    })),
-    async openStored(index, signal) {
+    entries,
+    async openNested(index, signal) {
       const reading = AbortSignal.any([active, signal]);
       reading.throwIfAborted();
-      const reader = await storedReader(index, reading);
-      return reader ? indexArchive(() => reader, reading) : undefined;
+      const entry = entries[index];
+      if (!entry || !/\.zip$/i.test(entry.name))
+        throw new Error("Select a ZIP entry to open.");
+      const limit = nestedLimit(depth, entry);
+      if (limit) throw new Error(limit);
+      const reader = entry.stored
+        ? await storedReader(index, reading)
+        : new LocalReader(await read(index, reading, maxNestedBytes));
+      if (!reader) throw new Error("This nested ZIP cannot be read.");
+      return indexArchive(() => reader, reading, depth + 1);
     },
     async readPrefix(index, maxBytes, signal) {
       checkReadLength(maxBytes);
@@ -328,43 +380,7 @@ async function indexArchive(
       reading.throwIfAborted();
       return new Blob([new Uint8Array(bytes)]);
     },
-    async read(
-      index: number,
-      signal: AbortSignal,
-      maxBytes: number,
-    ): Promise<Blob> {
-      const reading = AbortSignal.any([active, signal]);
-      reading.throwIfAborted();
-      const file = files[index];
-      if (!file) throw new Error("This file is no longer available.");
-      if (file.encrypted) throw new Error("This file is password-protected.");
-      if (
-        !Number.isSafeInteger(maxBytes) ||
-        maxBytes < 0 ||
-        file.uncompressedSize > maxBytes
-      ) {
-        throw new Error("This file exceeds the size limit for this action.");
-      }
-      const parts: Uint8Array<ArrayBuffer>[] = [];
-      let received = 0;
-      await file.getData(
-        new WritableStream<Uint8Array>({
-          write(chunk) {
-            reading.throwIfAborted();
-            received += chunk.byteLength;
-            if (received > maxBytes || received > file.uncompressedSize) {
-              throw new Error("The extracted file exceeds its allowed size.");
-            }
-            parts.push(new Uint8Array(chunk));
-          },
-        }),
-        { signal: reading, checkCrc32: true },
-      );
-      reading.throwIfAborted();
-      if (received !== file.uncompressedSize)
-        throw new Error("The extracted file is incomplete.");
-      return new Blob(parts);
-    },
+    read,
     close,
   };
 }

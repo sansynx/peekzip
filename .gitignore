@@ -9,3 +9,19 @@ test-results/
 coverage/
 *.tsbuildinfo
 .DS_Store
+
+# Local credentials, browser sessions, and network captures
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+playwright/.auth/
+*.har
+
+# Local archives and video exports
+*.zip
+!public/sample/field-notes.zip
+*.mp4
+*.webm
+*.mov

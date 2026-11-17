@@ -13,7 +13,7 @@ test("reads one remote entry with bounded byte ranges and refuses full responses
   let holdPrefix = false;
   const prefixRequest = Promise.withResolvers();
   const server = createServer((request, response) => {
-    if (request.url === "/full") {
+    if (request.url === "/full.zip") {
       response
         .writeHead(200, { "Content-Length": fixture.length })
         .end(fixture);
@@ -45,7 +45,11 @@ test("reads one remote entry with bounded byte ranges and refuses full responses
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const base = new URL(`http://127.0.0.1:${server.address().port}`);
   const signal = new AbortController().signal;
-  const archive = await openArchive(base, signal);
+  const archive = await openArchive(
+    new URL("/sample.zip", base),
+    signal,
+    base.origin,
+  );
   t.after(() => archive.close());
   const row = archive.entries.find(
     (entry) => entry.name === "survey/waypoints.csv",
@@ -55,7 +59,7 @@ test("reads one remote entry with bounded byte ranges and refuses full responses
   assert.match(await blob.text(), /North lookout,813,Exposed ridge/);
   assert.ok(transferred < fixture.length / 2);
   await assert.rejects(
-    openArchive(new URL("/full", base), signal),
+    openArchive(new URL("/full.zip", base), signal, base.origin),
     /partial downloads/,
   );
   const pack = archive.entries.find(
@@ -101,7 +105,7 @@ test("opens a stored inner ZIP as a bounded slice of its parent", async (t) => {
     Uint8Array.of(80, 75, 3, 4),
   );
   await assert.rejects(outer.readPrefix(pack.index, -1, signal));
-  const child = await outer.openStored(pack.index, signal);
+  const child = await outer.openNested(pack.index, signal);
   t.after(() => child.close());
   const log = child.entries.find((entry) => entry.name === "logbook.txt");
   assert.match(
@@ -111,5 +115,32 @@ test("opens a stored inner ZIP as a bounded slice of its parent", async (t) => {
   const compressed = child.entries.find(
     (entry) => entry.name === "coordinates.zip",
   );
-  assert.equal(await child.openStored(compressed.index, signal), undefined);
+  await assert.rejects(
+    child.openNested(compressed.index, signal),
+    /One nested ZIP/,
+  );
+});
+
+test("opens a deflated child once and keeps the child subject to the depth limit", async (t) => {
+  const { BlobReader, BlobWriter, ZipWriter } =
+    await import("@zip.js/zip.js/lib/zip-native.js");
+  const writer = new ZipWriter(new BlobWriter("application/zip"));
+  await writer.add("packed.zip", new BlobReader(new Blob([fixture])), {
+    level: 6,
+  });
+  const signal = new AbortController().signal;
+  const root = await openArchive(
+    new File([await writer.close()], "outer.zip"),
+    signal,
+  );
+  t.after(() => root.close());
+  assert.equal(root.entries[0].stored, false);
+  const child = await root.openNested(0, signal);
+  t.after(() => child.close());
+  const pack = child.entries.find(
+    (entry) => entry.name === "survey/daypack.zip",
+  );
+  await assert.rejects(child.openNested(pack.index, signal), /One nested ZIP/);
+  const text = child.entries.find((entry) => entry.name === "field-notes.txt");
+  assert.ok((await child.read(text.index, signal, 4096)).size > 0);
 });
