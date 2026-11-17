@@ -1,3 +1,4 @@
+import { shareIdPattern, sharedArchivePath } from "./share-link.mjs";
 import type { openArchive } from "./archive";
 import {
   hostedArchiveUrl,
@@ -74,6 +75,7 @@ const parents: Parent[] = [];
 
 let archive: Archive | undefined;
 let source: File | URL | undefined;
+let publishedId: string | undefined;
 let session = new AbortController();
 let reading = new AbortController();
 let selected: Entry | undefined;
@@ -101,7 +103,8 @@ function displaySize(size: number) {
 }
 
 function basename(name: string) {
-  return name.split("/").pop() || name;
+  const leaf = name.split(/[\\/]/).pop();
+  return leaf && leaf !== "." && leaf !== ".." ? leaf : "file";
 }
 
 function extension(name: string) {
@@ -174,6 +177,7 @@ function clearSession() {
   void archive?.close().catch(() => {});
   archive = undefined;
   source = undefined;
+  publishedId = undefined;
   selected = undefined;
   matches = [];
   duplicateNames.clear();
@@ -188,16 +192,24 @@ let localLink:
 function chooseArchive(file: File) {
   const link = localLink;
   if (link && (link.size !== file.size || link.name !== file.name)) {
-    status.textContent = `Choose ${link.name} (${displaySize(link.size)}) to follow this link, or cancel to open another archive`;
+    status.textContent =
+      "That ZIP doesn’t match this reference. Choose the original ZIP.";
     return;
   }
   cleanAddress();
   void open(file, link?.target, false, link?.ancestry);
 }
 
-function cleanAddress() {
+function resetReference() {
   localLink = undefined;
+  get("reference-info").hidden = true;
+  get("open-title").textContent = "Open an archive";
+  get("reference-zip").textContent = get("reference-file").textContent = "";
   delete status.dataset.awaitingFile;
+}
+
+function cleanAddress() {
+  resetReference();
   if (location.hash)
     history.replaceState(null, "", location.pathname + location.search);
 }
@@ -205,12 +217,29 @@ function cleanAddress() {
 function home() {
   clearSession();
   cleanAddress();
+  urlInput.value = "";
+  fileInput.value = "";
   workspace.hidden = true;
   landing.hidden = false;
   status.textContent = "";
   fileInput.focus({ preventScroll: true });
   window.scrollTo(0, 0);
 }
+
+const homeLink = document.querySelector<HTMLAnchorElement>(".wordmark")!;
+homeLink.addEventListener("click", (event) => {
+  if (
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.shiftKey
+  )
+    return;
+  event.preventDefault();
+  history.replaceState(null, "", homeLink.pathname);
+  home();
+});
 
 function canShare(value: File | URL | undefined): value is URL {
   return value instanceof URL && !value.search && !value.hash;
@@ -511,9 +540,12 @@ function displayArchive() {
   const current = parents.at(-1);
   get("ws-title").textContent = current
     ? basename(current.entry.name)
-    : rootName;
-  get("ws-meta").textContent =
-    source instanceof URL
+    : publishedId
+      ? "Shared file"
+      : rootName;
+  get("ws-meta").textContent = publishedId
+    ? "Anyone with the link can save this file."
+    : source instanceof URL
       ? `Hosted on ${source.host}${canShare(source) ? "" : " · Sharing disabled for this URL"}`
       : "Local ZIP · On this device";
   const crumb = get("ws-breadcrumb");
@@ -627,8 +659,10 @@ async function open(
   target?: Target,
   sample = false,
   ancestry: Target[] = [],
+  fileShareId?: string,
 ) {
   clearSession();
+  publishedId = fileShareId;
   const signal = session.signal;
   source = sourceToOpen;
   workspace.hidden = true;
@@ -642,6 +676,10 @@ async function open(
     if (signal.aborted) {
       await result.close();
       return;
+    }
+    if (fileShareId && result.entries.length !== 1) {
+      await result.close();
+      throw new Error("This file link is invalid.");
     }
     archive = result;
     const reveal = () => {
@@ -681,7 +719,10 @@ async function open(
     if (match || first) await pick((match ?? first)!, true);
   } catch (err) {
     if (!signal.aborted) {
-      status.textContent = message(err);
+      status.textContent =
+        fileShareId && /HTTP (404|410)/.test(message(err))
+          ? "This file link has expired or is unavailable. Ask the sender for a new link."
+          : message(err);
       if (cancelOpen) cancelOpen.hidden = true;
     }
   }
@@ -736,29 +777,80 @@ get("share-copy").addEventListener("click", async () => {
       "The link is selected — use your device’s copy command";
   }
 });
+const createShare = get<HTMLButtonElement>("share-create");
+let publishing: AbortController | undefined;
+shareDialog.addEventListener("close", () => publishing?.abort());
+function showLink(value: string) {
+  shareUrl.value = value;
+  shareUrl.hidden =
+    shareDialog.querySelector("label")!.hidden =
+    get("share-copy").hidden =
+      !value;
+}
+
+createShare.addEventListener("click", async () => {
+  if (
+    !selected ||
+    !archive ||
+    !(source instanceof File) ||
+    createShare.disabled
+  )
+    return;
+  const item = selected;
+  publishing = new AbortController();
+  const signal = AbortSignal.any([publishing.signal, reading.signal]);
+  createShare.disabled = true;
+  get("share-status").textContent = "Preparing file…";
+  try {
+    const file =
+      readyBlob ?? (await archive.read(item.index, signal, maxSaveBytes));
+    signal.throwIfAborted();
+    const { publishFile } = await import("./publish-file");
+    get("share-status").textContent = "Uploading selected file…";
+    const link = await publishFile(basename(item.name), file, signal);
+    signal.throwIfAborted();
+    showLink(link);
+    createShare.hidden = true;
+    get("share-detail").textContent =
+      "Anyone with this link can preview or download the file for 24 hours.";
+    get("share-status").textContent = "Link ready";
+    get("share-copy").focus();
+  } catch (error) {
+    if (!signal.aborted) get("share-status").textContent = message(error);
+  } finally {
+    if (!signal.aborted) createShare.disabled = false;
+  }
+});
+
 function showShareDialog() {
   if (!selected || !source || !archive) return;
+  const local = source instanceof File;
   const restricted = source instanceof URL && !canShare(source);
-  get("share-detail").textContent =
-    source instanceof File
-      ? "Send the ZIP separately if needed. The link includes the archive name, size and file path. The recipient chooses their copy to open this file."
-      : restricted
-        ? "Sharing is unavailable for a source URL containing a query or fragment, which can include an access token. Open a shareable direct ZIP URL to create a file link."
-        : "This link opens the selected file. It includes the source URL and path, and anyone with access to the ZIP can browse its other files.";
-  shareUrl.hidden = restricted;
-  shareDialog.querySelector("label")!.hidden = restricted;
-  get("share-copy").hidden = restricted;
+  const tooLarge = selected.size > maxSaveBytes;
+  get("share-detail").textContent = local
+    ? tooLarge
+      ? "Files over 256 MiB cannot be shared."
+      : `Upload only ${basename(selected.name)} (${displaySize(selected.size)})? Anyone with the link can preview or download it for 24 hours. Your original ZIP stays on this device.`
+    : restricted
+      ? "Sharing is unavailable for a source URL containing a query or fragment."
+      : publishedId
+        ? "Anyone with the link can save this shared file until it expires."
+        : "This link opens the selected file. Anyone with access to the ZIP can also browse its other files.";
+  createShare.hidden = !local || tooLarge;
+  createShare.disabled = false;
   get("share-status").textContent = "";
-  shareUrl.value = "";
+  showLink("");
   shareDialog.showModal();
-  if (restricted) return;
+  if (local || restricted) return;
+  if (publishedId && !parents.length) {
+    showLink(new URL("/#s=" + publishedId, location.origin).href);
+    return;
+  }
   const url = new URL(location.pathname, location.origin);
   const item = targetFor(selected, archive);
   const params = new URLSearchParams({
     v: "1",
-    ...(source instanceof File
-      ? { local: source.name, size: String(source.size) }
-      : { src: source.href }),
+    src: (source as URL).href,
     file: item.name,
   });
   if (item.index !== undefined) params.set("index", String(item.index));
@@ -773,13 +865,35 @@ function showShareDialog() {
     );
   }
   url.hash = params.toString();
-  shareUrl.value = url.href;
+  showLink(url.href);
 }
 
 get("open-form").addEventListener("submit", (event) => {
   event.preventDefault();
   try {
-    const url = hostedArchiveUrl(urlInput.value.trim(), location.origin);
+    const value = urlInput.value.trim();
+    let address: URL;
+    try {
+      address = new URL(value);
+    } catch {
+      throw new Error(
+        "Paste the complete PeekZip link or a ZIP URL from this site.",
+      );
+    }
+    if (
+      address.origin === location.origin &&
+      !address.username &&
+      !address.password &&
+      address.pathname === "/" &&
+      address.hash &&
+      !address.search
+    ) {
+      history.replaceState(null, "", address.pathname + address.hash);
+      urlInput.value = "";
+      followLink();
+      return;
+    }
+    const url = hostedArchiveUrl(value, location.origin);
     cleanAddress();
     void open(url);
   } catch (error) {
@@ -788,11 +902,7 @@ get("open-form").addEventListener("submit", (event) => {
 });
 get("sample").addEventListener("click", () => {
   cleanAddress();
-  void open(
-    new URL(samplePath, location.origin),
-    undefined,
-    true,
-  );
+  void open(new URL(samplePath, location.origin), undefined, true);
 });
 fileInput.addEventListener("change", () => {
   const file = fileInput.files?.[0];
@@ -1033,13 +1143,30 @@ function followLink() {
   const src = parts.get("src");
   const local = parts.get("local");
   if (localLink) {
-    localLink = undefined;
-    delete status.dataset.awaitingFile;
+    resetReference();
     status.textContent = "";
     if (cancelOpen) cancelOpen.hidden = true;
   }
-  if (parts.get("v") !== "1" || (!src && !local)) return;
+  if (!location.hash) return;
   try {
+    if (parts.has("s")) {
+      const id = parts.get("s")!;
+      if (!shareIdPattern.test(id)) throw new Error("Invalid file link.");
+      if (parseInt(id.split("-")[0], 36) * 1000 <= Date.now())
+        throw new Error(
+          "This file link has expired. Ask the sender for a new link.",
+        );
+      void open(
+        new URL(sharedArchivePath(id), location.origin),
+        undefined,
+        true,
+        [],
+        id,
+      );
+      return;
+    }
+    if (parts.get("v") !== "1" || (!src && !local))
+      throw new Error("Invalid PeekZip link.");
     const url = src ? hostedArchiveUrl(src, location.origin) : undefined;
     const name = parts.get("file");
     const index = parts.get("index");
@@ -1088,7 +1215,11 @@ function followLink() {
     landing.hidden = false;
     localLink = { name: local, size, target, ancestry };
     status.dataset.awaitingFile = "";
-    status.textContent = `Choose your copy of ${local} to preview ${name}`;
+    get("reference-file").textContent = basename(target.name);
+    get("reference-zip").textContent = local;
+    get("open-title").textContent = "Open a shared file";
+    get("reference-info").hidden = false;
+    status.textContent = "";
     if (cancelOpen) cancelOpen.hidden = false;
     fileInput.focus();
   } catch (err) {
@@ -1096,5 +1227,7 @@ function followLink() {
     status.textContent = message(err);
   }
 }
-window.addEventListener("hashchange", followLink);
+window.addEventListener("hashchange", () =>
+  location.hash ? followLink() : home(),
+);
 followLink();

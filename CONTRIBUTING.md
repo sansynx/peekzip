@@ -23,3 +23,5 @@ Dependabot checks npm packages and GitHub Actions weekly. Run the same release c
 Report vulnerabilities through the [private reporting process](SECURITY.md).
 
 Bundled asset licenses are in [Instrument Sans](public/fonts/InstrumentSans-LICENSE.txt), [Instrument Serif](public/fonts/InstrumentSerif-LICENSE.txt) and [Phosphor](public/phosphor-license.txt).
+
+Local browsing works with Astro preview. To run end-to-end uploads, deploy the site and `api/` together on Vercel with a connected private Blob store and a rate limit on `/api/share-upload`. Browser tests use a simulated store in CI.

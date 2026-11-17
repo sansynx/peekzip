@@ -1,13 +1,13 @@
 # PeekZip
 
-Browse a ZIP in your browser and download individual files. Local files stay on your device. Hosted ZIPs use HTTP byte ranges.
+Browse a ZIP in your browser and download individual files. Local ZIPs stay on your device. Hosted ZIPs use HTTP byte ranges.
 
 [Live demo](https://peekzip.vercel.app/) · [Try the sample map](https://peekzip.vercel.app/#v=1&src=https%3A%2F%2Fpeekzip.vercel.app%2Fsample%2Ffield-notes.zip&file=maps%2Fcontour-study.png)
 
 ## Features
 
 - Search by filename or path. Preview text, images, and CSV tables.
-- Browse one nested ZIP and share a link to a specific entry.
+- Browse one nested ZIP. Share a selected file for 24 hours without sending the rest of your ZIP.
 - Open local files or direct ZIP URLs hosted on the viewer’s own origin.
 
 ## How it works
