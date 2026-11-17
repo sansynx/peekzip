@@ -20,10 +20,19 @@ for (const source of ["hosted", "local"] as const) {
     source +
       " ZIP opens and shares a selected entry with an independent recipient",
     async ({ page, browser }, testInfo) => {
+      const sampleRequests: string[] = [];
+      page.on("request", (request) => {
+        if (new URL(request.url()).pathname === "/sample/field-notes.zip")
+          sampleRequests.push(request.headers()["range"]);
+      });
       await page.goto("/");
       if (source === "hosted") {
         await page.locator("#sample").click();
-        await expect(page.locator("#ws-body img")).toBeVisible();
+        const image = page.locator("#ws-body img");
+        await expect(image).toBeVisible();
+        await image.evaluate((node: HTMLImageElement) => node.decode());
+        await pick(page, "field-notes.txt");
+        await expect(page.locator("#ws-body pre")).toBeVisible();
       } else {
         await page.locator("#pick-file").setInputFiles(sample);
       }
@@ -36,6 +45,9 @@ for (const source of ["hosted", "local"] as const) {
       await pick(page, "logbook.txt");
       await page.locator("#ws-share").click();
       const link = await page.locator("#share-url").inputValue();
+      expect(sampleRequests).toEqual(
+        source === "hosted" ? ["bytes=0-262143"] : [],
+      );
 
       const context = await browser.newContext({
         viewport: testInfo.project.use.viewport,
@@ -50,13 +62,11 @@ for (const source of ["hosted", "local"] as const) {
           await expect(recipient.locator("#open-status")).toContainText(
             "Choose your copy",
           );
-          await recipient
-            .locator("#pick-file")
-            .setInputFiles({
-              name: "wrong.zip",
-              mimeType: "application/zip",
-              buffer: Buffer.from("sample"),
-            });
+          await recipient.locator("#pick-file").setInputFiles({
+            name: "wrong.zip",
+            mimeType: "application/zip",
+            buffer: Buffer.from("sample"),
+          });
           await expect(recipient.locator("#open-status")).toContainText(
             "Choose field-notes.zip",
           );
@@ -137,7 +147,9 @@ test("pasted and shared sources enforce origin, redirect and depth rules", async
   await expect(page.locator("#share-copy")).toBeHidden();
 });
 
-test("keyboard help stays accessible in each archive layout", async ({ page }, testInfo) => {
+test("keyboard help stays accessible in each archive layout", async ({
+  page,
+}, testInfo) => {
   await page.goto("/");
   await page.locator("#sample").click();
   await expect(page.locator("#ws-body img")).toBeVisible();
@@ -154,7 +166,19 @@ test("keyboard help stays accessible in each archive layout", async ({ page }, t
     await expect(page.locator("#info-dialog")).toBeHidden();
     await pick(page, "daypack.zip");
     await page.locator("#ws-enter").tap();
-    await page.getByRole("button", { name: "Back to field-notes.zip" }).tap();
+    const back = page.getByRole("button", {
+      name: "Back to main files in field-notes.zip",
+    });
+    await expect(
+      back.getByText("Back to main files", { exact: false }).first(),
+    ).toBeVisible();
+    await pick(page, "logbook.txt");
+    await expect(page.locator("#ws-body pre")).toContainText("north transect");
+    await back.tap();
+    await expect(page.locator("#ws-index-panel")).toBeVisible();
+    await expect(page.locator(".pz-row[aria-current=true]")).toContainText(
+      "daypack.zip",
+    );
     await expect(page.locator("#ws-title")).toHaveText("field-notes.zip");
   } else {
     await shortcut.click();

@@ -144,3 +144,36 @@ test("opens a deflated child once and keeps the child subject to the depth limit
   const text = child.entries.find((entry) => entry.name === "field-notes.txt");
   assert.ok((await child.read(text.index, signal, 4096)).size > 0);
 });
+
+test("a sample larger than the in-memory limit falls back to selective reads", async (t) => {
+  const { BlobReader, BlobWriter, ZipWriter } =
+    await import("@zip.js/zip.js/lib/zip-native.js");
+  const writer = new ZipWriter(new BlobWriter());
+  await writer.add(
+    "data.bin",
+    new BlobReader(new Blob([new Uint8Array(512 * 1024)])),
+    { level: 0 },
+  );
+  const blob = await writer.close();
+  const ranges = [];
+  t.mock.method(globalThis, "fetch", async (_url, init) => {
+    const range = new Headers(init.headers).get("Range");
+    ranges.push(range);
+    const [, first, last] = /^bytes=(\d+)-(\d+)$/.exec(range);
+    const end = Math.min(Number(last), blob.size - 1);
+    return new Response(blob.slice(Number(first), end + 1), {
+      status: 206,
+      headers: { "Content-Range": `bytes ${first}-${end}/${blob.size}` },
+    });
+  });
+  const url = new URL("https://viewer.example/sample/field-notes.zip");
+  const archive = await openArchive(
+    url,
+    new AbortController().signal,
+    url.origin,
+  );
+  t.after(() => archive.close());
+  assert.equal(archive.entries[0].name, "data.bin");
+  assert.equal(ranges[0], "bytes=0-262143");
+  assert.ok(ranges.length > 1);
+});

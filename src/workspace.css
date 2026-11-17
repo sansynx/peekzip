@@ -475,11 +475,14 @@
   #workspace #ws-title { margin-inline: 0; }
   #workspace #ws-shortcuts, .pz-crumb, .wide-label { display: none; }
   .phone-label { display: inline; }
-  #ws-parent { max-width: 100%; min-width: 0; }
-  .pz-parent-link {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  #workspace #ws-parent {
+    max-width: 100%;
+    padding: 4px 10px;
+    text-align: left;
+    border: 1px solid var(--frame-edge);
+    border-radius: var(--radius-control);
+    background: var(--ws-paper);
+    box-shadow: var(--bevel);
   }
 }
 .pz-actions {
