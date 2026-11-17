@@ -476,7 +476,7 @@
   #workspace #ws-shortcuts, .pz-crumb, .wide-label { display: none; }
   .phone-label { display: inline; }
   #ws-parent { max-width: 100%; min-width: 0; }
-  #ws-parent-name {
+  .pz-parent-link {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

@@ -525,7 +525,6 @@ function displayArchive() {
   if (current) {
     const parentName = parents.at(-2)?.entry.name ?? rootName;
     get("ws-parent-name").textContent = basename(parentName);
-    parentButton.setAttribute("aria-label", `Back to ${parentName}`);
   }
   get("ws-filename").textContent = "Choose a file";
   get("ws-filemeta").textContent = "";
