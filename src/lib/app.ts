@@ -40,7 +40,9 @@ const cancelOpen = document.querySelector<HTMLButtonElement>("#open-cancel");
 const backToFiles = get<HTMLButtonElement>("ws-back-list");
 const filesView = get<HTMLButtonElement>("ws-files-view");
 const previewView = get<HTMLButtonElement>("ws-preview-view");
-const singlePanel = matchMedia("(max-width: 720px)");
+const singlePanel = matchMedia(
+  "(max-width: 720px), (pointer: coarse) and (max-width: 960px) and (max-height: 540px)",
+);
 function setPanel(panel: "files" | "preview") {
   workspace.dataset.panel = panel;
   filesView.setAttribute("aria-pressed", String(panel === "files"));
@@ -511,8 +513,8 @@ function displayArchive() {
     : rootName;
   get("ws-meta").textContent =
     source instanceof URL
-      ? `Remote archive · ${source.host} · ${canShare(source) ? "Read directly from its source" : "Sharing is disabled for URLs with query parameters or fragments."}`
-      : "Local archive · Files stay on this device";
+      ? `Hosted on ${source.host}${canShare(source) ? "" : " · Sharing disabled for this URL"}`
+      : "Local ZIP · On this device";
   const crumb = get("ws-breadcrumb");
   crumb.textContent = [
     rootName,
@@ -520,6 +522,10 @@ function displayArchive() {
   ].join("  ›  ");
   crumb.hidden = !current;
   parentButton.hidden = !current;
+  if (current) {
+    const parentName = parents.at(-2)?.entry.name ?? rootName;
+    get("ws-parent-name").textContent = basename(parentName);
+  }
   get("ws-filename").textContent = "Choose a file";
   get("ws-filemeta").textContent = "";
   notice.textContent = "";
@@ -864,6 +870,7 @@ function showKeys() {
   keysDialog.showModal();
 }
 get("ws-shortcuts").addEventListener("click", showKeys);
+get("help-shortcuts").addEventListener("click", showKeys);
 keysDialog
   .querySelector(".dismiss")!
   .addEventListener("click", () => keysDialog.close());

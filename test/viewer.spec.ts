@@ -133,6 +133,8 @@ test("pasted and shared sources enforce origin, redirect and depth rules", async
     "Sharing is unavailable",
   );
   await expect(page.locator("#share-url")).toBeHidden();
+  await expect(page.locator('label[for="share-url"]')).toBeHidden();
+  await expect(page.locator("#share-copy")).toBeHidden();
 });
 
 test("the Pele diagram fits the landing page", async ({ page }) => {
@@ -162,4 +164,33 @@ test("the Pele diagram fits the landing page", async ({ page }) => {
     fits: true,
     background: "rgb(0, 0, 0)",
   });
+});
+
+test("keyboard help stays accessible in each archive layout", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await page.locator("#sample").click();
+  await expect(page.locator("#ws-body img")).toBeVisible();
+  const shortcut = page.locator("#ws-shortcuts");
+  if (testInfo.project.name === "phone") {
+    await expect(shortcut).toBeHidden();
+    await page.getByRole("button", { name: "Help", exact: true }).tap();
+    const help = page.locator("#help-shortcuts");
+    await help.tap();
+    await expect(page.locator("#keys-dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(help).toBeFocused();
+    await page.locator("#info-dialog .dismiss").tap();
+    await expect(page.locator("#info-dialog")).toBeHidden();
+    await pick(page, "daypack.zip");
+    await page.locator("#ws-enter").tap();
+    await page.getByRole("button", { name: "Back to field-notes.zip" }).tap();
+    await expect(page.locator("#ws-title")).toHaveText("field-notes.zip");
+  } else {
+    await shortcut.click();
+    await expect(page.locator("#keys-dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(shortcut).toBeFocused();
+    await page.keyboard.press("?");
+    await expect(page.locator("#keys-dialog")).toBeVisible();
+  }
 });
