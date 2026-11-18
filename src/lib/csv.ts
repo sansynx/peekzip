@@ -1,5 +1,5 @@
 // Only parse as much of the CSV as the preview can display.
-export function csvPreviewRows(text: string): string[][] {
+export function csvPreviewRows(text: string, truncated = false): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -31,7 +31,7 @@ export function csvPreviewRows(text: string): string[][] {
   }
 
   // A quoted empty field is a record even when its decoded value is empty.
-  if (recordStart < text.length) {
+  if (!truncated && recordStart < text.length) {
     finishField();
     rows.push(row);
   }
