@@ -170,6 +170,7 @@ function releasePreview() {
 
 function clearSession() {
   session.abort();
+  if (shareDialog.open) shareDialog.close();
   session = new AbortController();
   releasePreview();
   for (const parent of parents.splice(0))
@@ -361,9 +362,9 @@ function locateSelected() {
   refocusList();
 }
 
-function csvTable(text: string) {
+function csvTable(text: string, truncated: boolean) {
   const table = document.createElement("table");
-  for (const values of csvPreviewRows(text)) {
+  for (const values of csvPreviewRows(text, truncated)) {
     const tr = table.insertRow();
     for (const value of values) {
       tr.append(element(table.rows.length === 1 ? "th" : "td", "", value));
@@ -391,7 +392,9 @@ async function preview(blob: Blob, item: Entry, signal: AbortSignal) {
     stage.replaceChildren(image);
     return;
   }
-  const text = await blob.slice(0, TEXT_LIMIT).text();
+  const textBytes = Math.min(blob.size, TEXT_LIMIT);
+  const truncated = textBytes < item.size;
+  const text = await blob.slice(0, textBytes).text();
   if (signal.aborted) return;
   if (text.includes("\0")) {
     showStage(
@@ -399,15 +402,22 @@ async function preview(blob: Blob, item: Entry, signal: AbortSignal) {
     );
     return;
   }
-  stage.replaceChildren(
-    kind === "csv"
-      ? csvTable(text)
-      : element("pre", "", text || "(empty file)"),
-  );
-  if (kind === "csv")
-    notice.textContent = "Preview shows up to 100 rows and 24 columns.";
-  else if (blob.size > TEXT_LIMIT)
-    notice.textContent = `Preview shows the first ${displaySize(TEXT_LIMIT)}.`;
+  if (kind === "csv") {
+    const table = csvTable(text, truncated);
+    if (truncated && !table.rows.length)
+      showStage("No complete CSV records fit in the preview.");
+    else stage.replaceChildren(table);
+  } else {
+    stage.replaceChildren(element("pre", "", text || "(empty file)"));
+  }
+  const byteNotice = truncated
+    ? `Preview reads the first ${displaySize(textBytes)}.`
+    : "";
+  notice.textContent = kind === "csv"
+    ? [byteNotice, "Preview shows up to 100 rows and 24 columns."]
+        .filter(Boolean)
+        .join(" ")
+    : byteNotice;
 }
 
 function targetFor(item: Entry, active: Archive): Target {
@@ -1098,7 +1108,7 @@ workspace.addEventListener("keydown", (event) => {
   if (!event.repeat || event.key === "j" || event.key === "k") shortcut();
 });
 search.addEventListener("keydown", (event) => {
-  if (event.key === "ArrowDown" && matches.length) {
+  if (!event.isComposing && event.key === "ArrowDown" && matches.length) {
     event.preventDefault();
     focusFile(0);
   }
@@ -1152,10 +1162,6 @@ function followLink() {
     if (parts.has("s")) {
       const id = parts.get("s")!;
       if (!shareIdPattern.test(id)) throw new Error("Invalid file link.");
-      if (parseInt(id.split("-")[0], 36) * 1000 <= Date.now())
-        throw new Error(
-          "This file link has expired. Ask the sender for a new link.",
-        );
       void open(
         new URL(sharedArchivePath(id), location.origin),
         undefined,

@@ -10,7 +10,13 @@ export default async function handler(req, res) {
     req.headers["content-type"]?.split(";")[0] !== "application/json"
   )
     return res.status(403).end();
-  const size = req.body?.size;
+  let body;
+  try {
+    body = req.body;
+  } catch {
+    return res.status(400).end();
+  }
+  const size = body?.size;
   if (!Number.isSafeInteger(size) || size < 1 || size > maxSharedZipBytes)
     return res.status(400).end();
 

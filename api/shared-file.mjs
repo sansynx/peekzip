@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { get } from "@vercel/blob";
+import { BlobError, get } from "@vercel/blob";
 import { shareIdPattern } from "../src/lib/share-link.mjs";
 
 export default async function handler(req, res) {
@@ -35,15 +35,47 @@ export default async function handler(req, res) {
       await object.stream?.cancel();
       return res.status(416).end();
     }
+    const returnedRange = /^bytes (\d+)-(\d+)\/(\d+)$/i.exec(contentRange);
+    const total = Number(returnedRange?.[3]);
+    const last = Math.min(end, total - 1);
+    const length = last - start + 1;
+    const contentLength = object.headers.get("content-length");
+    if (
+      !returnedRange ||
+      !Number.isSafeInteger(total) ||
+      length < 1 ||
+      Number(returnedRange[1]) !== start ||
+      Number(returnedRange[2]) !== last ||
+      (contentLength !== null && Number(contentLength) !== length)
+    ) {
+      await object.stream.cancel();
+      return res.status(502).end();
+    }
     res.status(206);
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader("Content-Range", contentRange);
-    for (const name of ["content-length", "etag"]) {
-      const value = object.headers.get(name);
-      if (value) res.setHeader(name, value);
-    }
-    await pipeline(Readable.fromWeb(object.stream), res);
-  } catch {
-    if (!res.headersSent && !res.destroyed) res.status(503).end();
+    res.setHeader("Content-Length", String(length));
+    const etag = object.headers.get("etag");
+    if (etag) res.setHeader("ETag", etag);
+    await pipeline(
+      Readable.fromWeb(object.stream),
+      async function* (chunks) {
+        let remaining = length;
+        for await (const chunk of chunks) {
+          remaining -= chunk.byteLength;
+          if (remaining < 0) throw new Error("Unexpected length for Blob range.");
+          yield chunk;
+        }
+        if (remaining !== 0) throw new Error("Unexpected length for Blob range.");
+      },
+      res,
+    );
+  } catch (error) {
+    if (res.headersSent || res.destroyed) return;
+    // The Blob SDK reports upstream HTTP failures as BlobError messages.
+    const unsatisfiable =
+      error instanceof BlobError &&
+      error.message.startsWith("Vercel Blob: Failed to fetch blob: 416 ");
+    res.status(unsatisfiable ? 416 : 503).end();
   }
 }

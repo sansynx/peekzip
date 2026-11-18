@@ -1,4 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import {
+  BlobReader,
+  BlobWriter,
+  ZipWriter,
+} from "@zip.js/zip.js/lib/zip-native.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -82,6 +87,10 @@ for (const source of ["hosted", "local"] as const) {
         const requests: string[] = [];
         recipient.on("request", (req) => requests.push(req.url()));
         if (source === "local") {
+          // A recipient's clock must not decide whether the server's link is active.
+          await recipient.clock.setFixedTime(
+            new Date(Date.now() + 48 * 60 * 60_000),
+          );
           await recipient.route("**/shared/" + id + ".zip", async (route) => {
             const [, lo, hi] = /^bytes=(\d+)-(\d+)$/.exec(
               route.request().headers().range,
@@ -258,4 +267,77 @@ test("pasted links, legacy local references, and the logo work from a clean sess
   await expect(page.locator("#open-status")).toContainText(
     "complete PeekZip link",
   );
+});
+
+test("navigating to another file link closes the previous share dialog", async ({
+  page,
+  baseURL,
+}) => {
+  const params = new URLSearchParams({
+    v: "1",
+    src: baseURL + "/sample/field-notes.zip",
+    file: "field-notes.txt",
+  });
+  await page.goto("/#" + params);
+  await expect(page.locator("#ws-body pre")).toBeVisible();
+  await page.locator("#ws-share").click();
+  await expect(page.locator("#share-dialog")).toBeVisible();
+
+  params.set("file", "survey/waypoints.csv");
+  await page.goto("/#" + params);
+  await expect(page.locator("#ws-body table")).toBeVisible();
+  await expect(page.locator("#share-dialog")).toBeHidden();
+  await page.locator("#ws-share").click();
+  expect(new URL(await page.locator("#share-url").inputValue()).hash).toContain(
+    "file=survey%2Fwaypoints.csv",
+  );
+});
+
+test("search arrow navigation leaves active IME composition in the search box", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#pick-file").setInputFiles(sample);
+  const search = page.locator("#ws-search");
+  await search.fill("daypack");
+  await search.dispatchEvent("keydown", { key: "ArrowDown", isComposing: true });
+  await expect(search).toBeFocused();
+  await search.press("ArrowDown");
+  await expect(page.locator(".pz-row", { hasText: "daypack.zip" })).toBeFocused();
+});
+
+for (const withHeader of [true, false]) {
+  const reason = withHeader ? "omits a cut-off record" : "explains an empty preview";
+  test(`byte-limited CSV preview ${reason}`, async ({ page }) => {
+    const writer = new ZipWriter(new BlobWriter());
+    const header = withHeader ? "name,notes\r\n" : "";
+    const csv = header + 'stop,"' + "a".repeat(192 * 1024) + '"';
+    await writer.add("long.csv", new BlobReader(new Blob([csv])), { level: 0 });
+    await page.goto("/");
+    await page.locator("#pick-file").setInputFiles({
+      name: "csv.zip",
+      mimeType: "application/zip",
+      buffer: Buffer.from(await (await writer.close()).arrayBuffer()),
+    });
+    await pick(page, "long.csv");
+    if (withHeader) {
+      await expect(page.locator("#ws-body tr")).toHaveCount(1);
+      await expect(page.locator("#ws-body th")).toHaveText(["name", "notes"]);
+    } else {
+      await expect(page.locator("#ws-body")).toContainText("No complete CSV records");
+    }
+    await expect(page.locator("#ws-notice")).toContainText("192 KiB");
+  });
+}
+
+test("the viewer reports when the share server returns HTTP 410", async ({
+  page,
+}) => {
+  const futureClientId = Math.ceil((Date.now() + 60_000) / 1000).toString(36) +
+    "-" + "a".repeat(32);
+  await page.route(`**/shared/${futureClientId}.zip`, (route) =>
+    route.fulfill({ status: 410 }),
+  );
+  await page.goto("/#s=" + futureClientId);
+  await expect(page.locator("#open-status")).toContainText("has expired");
 });

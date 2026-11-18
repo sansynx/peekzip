@@ -19,3 +19,16 @@ test("CSV preview stops at 100 rows and 24 columns", () => {
   assert.equal(rows.length, 100);
   assert.ok(rows.every((row) => row.length === 24 && row.at(-1) === "23"));
 });
+
+test("a byte-limited CSV preview only renders complete records", () => {
+  assert.deepEqual(csvPreviewRows('name,notes\r\nstop,"part of a', true), [
+    ["name", "notes"],
+  ]);
+  assert.deepEqual(csvPreviewRows("name,notes\r\nstop,part of a", true), [
+    ["name", "notes"],
+  ]);
+  assert.deepEqual(csvPreviewRows("name,notes\r\nstop,complete"), [
+    ["name", "notes"],
+    ["stop", "complete"],
+  ]);
+});

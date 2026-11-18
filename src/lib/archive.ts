@@ -15,6 +15,7 @@ import {
 } from "@zip.js/zip.js/lib/zip-native.js";
 
 const maxDirectoryRead = 32 * 1024 * 1024;
+const remoteStreamWindow = 16 * 1024 * 1024;
 const maxEntries = 100_000;
 
 function checkReadLength(length: number) {
@@ -54,6 +55,45 @@ class RemoteReader extends HttpReader {
     this.fetchRange = fetchRange;
   }
 
+  override createReadable({
+    offset = 0,
+    size = this.size - offset,
+  }: CreateReadableOptions = {}) {
+    // Own the fetch signal so cancellation can interrupt the request before
+    // response headers arrive, including between windows of a large member.
+    const abort = new AbortController();
+    const end = Math.min(offset + size, this.size);
+    let next = offset;
+    let body: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    return new ReadableStream<Uint8Array>({
+      pull: async (controller) => {
+        while (!abort.signal.aborted) {
+          if (!body) {
+            if (next >= end) {
+              controller.close();
+              return;
+            }
+            const stop = Math.min(next + remoteStreamWindow, end);
+            const response = await this.fetchRange(this.source.href, {
+              headers: { Range: `bytes=${next}-${stop - 1}` },
+              signal: abort.signal,
+            });
+            body = response.body!.getReader();
+            next = stop;
+          }
+          const { value, done } = await body.read();
+          if (!done) {
+            if (!abort.signal.aborted) controller.enqueue(value);
+            return;
+          }
+          body.releaseLock();
+          body = undefined;
+        }
+      },
+      cancel: (reason) => abort.abort(reason),
+    });
+  }
+
   override async readUint8Array(
     offset: number,
     length: number,
@@ -69,7 +109,9 @@ class RemoteReader extends HttpReader {
 }
 
 async function remoteReader(source: URL, lifetime: AbortSignal) {
-  let version: { size: number; tag: string | null } | undefined;
+  let version:
+    | { size: number; tag: string | null; lastModified: string | null }
+    | undefined;
   async function fetchRange(url: string, init?: RequestInit) {
     const signal = init?.signal
       ? AbortSignal.any([lifetime, init.signal])
@@ -126,13 +168,20 @@ async function remoteReader(source: URL, lifetime: AbortSignal) {
       );
     }
 
-    const tag =
-      response.headers.get("etag") ?? response.headers.get("last-modified");
-    if (version && (version.size !== total || version.tag !== tag)) {
+    const lastModified = response.headers.get("last-modified");
+    const tag = response.headers.get("etag") ?? lastModified;
+    if (
+      version &&
+      (version.size !== total ||
+        version.tag !== tag ||
+        (version.lastModified !== null &&
+          lastModified !== null &&
+          version.lastModified !== lastModified))
+    ) {
       void response.body.cancel().catch(() => {});
       throw new Error("The archive changed during reading. Open it again.");
     }
-    version ??= { size: total, tag };
+    version ??= { size: total, tag, lastModified };
     // Do not buffer a server's unbounded body just because it claims a short range.
     let remaining = finalByte - start + 1;
     const bounded = response.body.pipeThrough(
@@ -195,11 +244,18 @@ interface Archive {
 class EntryReader extends Reader<Reader<unknown>> {
   private parent: Reader<unknown>;
   private start: number;
-  constructor(parent: Reader<unknown>, start: number, size: number) {
+  private signal: AbortSignal;
+  constructor(
+    parent: Reader<unknown>,
+    start: number,
+    size: number,
+    signal: AbortSignal,
+  ) {
     super(parent);
     this.parent = parent;
     this.start = start;
     this.size = size;
+    this.signal = signal;
   }
 
   override createReadable({
@@ -226,7 +282,7 @@ class EntryReader extends Reader<Reader<unknown>> {
   override readUint8Array(
     offset: number,
     length: number,
-    operation?: AbortSignal,
+    operation = this.signal,
   ): Uint8Array | Promise<Uint8Array> {
     checkReadLength(length);
     if (!Number.isSafeInteger(offset) || offset < 0)
@@ -304,7 +360,7 @@ async function indexArchive(
       end > input.size
     )
       throw new Error("Invalid stored entry range.");
-    return new EntryReader(input, offset, file.compressedSize);
+    return new EntryReader(input, offset, file.compressedSize, signal);
   }
 
   try {
