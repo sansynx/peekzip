@@ -15,7 +15,7 @@
   "dependencies": {
     "@vercel/blob": "^2.9.0",
     "@zip.js/zip.js": "^2.25.0",
-    "astro": "^7.4.12"
+    "astro": "^7.4.13"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
